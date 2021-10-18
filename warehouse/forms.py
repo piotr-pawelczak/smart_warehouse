@@ -8,17 +8,18 @@ class WarehouseForm(forms.ModelForm):
 
     class Meta:
         model = Warehouse
-        fields = ['name', 'symbol', 'city', 'address']
+        fields = ['name', 'symbol', 'city', 'address', 'description']
 
         # Usunięcie etykiet
-        labels = {'name': '', 'symbol': '', 'city': '', 'address': ''}
+        labels = {'name': '', 'symbol': '', 'city': '', 'address': '', 'description': ''}
 
         # Ustawienie wartości wyświetlających się na polach formularza
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': 'Nazwa magazynu'}),
             'symbol': forms.TextInput(attrs={'placeholder': 'Symbol (maksymalnie 3 znaki)'}),
             'city': forms.TextInput(attrs={'placeholder': 'Miasto'}),
-            'address': forms.TextInput(attrs={'placeholder': 'Adres'})
+            'address': forms.TextInput(attrs={'placeholder': 'Adres'}),
+            'description': forms.Textarea(attrs={'placeholder': 'Opis'})
         }
 
 

@@ -4,26 +4,66 @@
 
 {% block content %}
     <h1>{{ warehouse.name }}</h1>
-    <h2>{{ warehouse.symbol }}</h2>
-    <h2>{{ warehouse.address }}</h2>
+    <div class="row">
+        <div class="col-lg-4">
+            <table class="table table-bordered warehouse_list_table mt-3">
+                <tr>
+                    <th>Symbol</th>
+                    <td>{{ warehouse.symbol }}</td>
+                </tr>
+                <tr>
+                    <th>Miasto</th>
+                    <td>{{ warehouse.city }}</td>
+                </tr>
+                <tr>
+                    <th>Adres</th>
+                    <td>{{ warehouse.address }}</td>
+                </tr>
+            </table>
 
-    <form action="{% url "warehouse:warehouse_delete" warehouse.id %}" method="post">
-        <p><input type="submit" value="Usuń magazyn" onclick="return confirm('Czy na pewno chcesz usunąć magazyn?')"></p>
-        {% csrf_token %}
-    </form>
+            <h4 class="mt-4">Opis</h4>
+            {% if warehouse.description %}
+                <p>{{ warehouse.description }}</p>
+            {% else %}
+                <p>Brak opisu.</p>
+            {% endif %}
 
-    {% for shelf in shelves %}
-        <h1>{{ shelf.name }}</h1>
-        <form action="{% url "warehouse:shelf_delete" shelf.id %}" method="post">
-            <p><input type="submit" value="Usuń regał" onclick="return confirm('Czy na pewno chcesz usunąć regał?')"></p>
-            {% csrf_token %}
-        </form>
-    {% endfor %}
+            <div class="row mt-4">
+                <h4>Zarządzaj magazynem</h4>
+                <div class="col-6">
+                    <form action="{% url "warehouse:warehouse_delete" warehouse.id %}" method="post">
+                        <button type="submit" class="btn btn-danger mt-3">Usuń magazyn</button>
+                        {% csrf_token %}
+                    </form>
+                </div>
+                <div class="col-6">
+                    <a href="{% url "warehouse:warehouse_edit" warehouse.id %}"><button type="submit" class="btn btn-warning mt-3">Edytuj magazyn</button></a>
+                </div>
+            </div>
 
-    <p>Dodaj regał</p>
-    <form action="." method="post">
-        {{ form.as_p }}
-        <p><input type="submit" value="Dodaj">
-        {% csrf_token %}
-    </form>
+        </div>
+
+        <div class="col-lg-7 offset-lg-1 mt-4 mt-lg-0">
+            <h4>Regały</h4>
+            {% for shelf in shelves %}
+                <h1>{{ shelf.name }}</h1>
+                <form action="{% url "warehouse:shelf_delete" shelf.id %}" method="post">
+                    <p><input type="submit" value="Usuń regał" onclick="return confirm('Czy na pewno chcesz usunąć regał?')"></p>
+                    {% csrf_token %}
+                </form>
+            {% empty %}
+                <p>Brak regałów</p>
+            {% endfor %}
+
+            <p>Dodaj regał</p>
+            <form action="." method="post">
+                {{ form.as_p }}
+                <p><input type="submit" value="Dodaj">
+                {% csrf_token %}
+            </form>
+        </div>
+
+    </div>
+
+
 {% endblock %}

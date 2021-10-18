@@ -56,6 +56,18 @@ def warehouse_delete(request, pk):
     return redirect('/warehouses/')
 
 
+def warehouse_edit(request, pk):
+    warehouse = Warehouse.objects.get(id=pk)
+    form = WarehouseForm(instance=warehouse)
+    if request.method == 'POST':
+        print(request.POST)
+        form = WarehouseForm(request.POST, instance=warehouse)
+        if form.is_valid():
+            form.save()
+            return redirect(f'/warehouse/{pk}')
+    return render(request, 'warehouse/warehouse_edit.html', {'form': form})
+
+
 def shelf_delete(request, pk):
     shelf = get_object_or_404(Shelf, id=pk)
 
