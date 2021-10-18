@@ -1,0 +1,29 @@
+{% extends "warehouse/base.html" %}
+
+{% block title %}{{ warehouse.name }}{% endblock %}
+
+{% block content %}
+    <h1>{{ warehouse.name }}</h1>
+    <h2>{{ warehouse.symbol }}</h2>
+    <h2>{{ warehouse.address }}</h2>
+
+    <form action="{% url "warehouse:warehouse_delete" warehouse.id %}" method="post">
+        <p><input type="submit" value="Usuń magazyn" onclick="return confirm('Czy na pewno chcesz usunąć magazyn?')"></p>
+        {% csrf_token %}
+    </form>
+
+    {% for shelf in shelves %}
+        <h1>{{ shelf.name }}</h1>
+        <form action="{% url "warehouse:shelf_delete" shelf.id %}" method="post">
+            <p><input type="submit" value="Usuń regał" onclick="return confirm('Czy na pewno chcesz usunąć regał?')"></p>
+            {% csrf_token %}
+        </form>
+    {% endfor %}
+
+    <p>Dodaj regał</p>
+    <form action="." method="post">
+        {{ form.as_p }}
+        <p><input type="submit" value="Dodaj">
+        {% csrf_token %}
+    </form>
+{% endblock %}

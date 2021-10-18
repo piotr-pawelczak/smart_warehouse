@@ -1,8 +1,29 @@
 body {
-    background-color: #303030;
+    font-family: 'Montserrat', sans-serif;
 }
 
-h1 {
-    font-size: 20px;
-    color: aliceblue;
+.warehouse_list_header {
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.warehouse_list_description {
+    margin-bottom: 20px;
+}
+
+.warehouse_table_header {
+    background-color: #343a40;
+    color: white;
+    text-transform: uppercase;
+    font-weight: 900;
+}
+
+.warehouse_list_table a {
+    text-decoration: none;
+    color: black;
+}
+
+.add_warehouse form input {
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
