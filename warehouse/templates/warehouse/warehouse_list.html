@@ -10,24 +10,27 @@
 
     <p class="warehouse_list_description">Poniżej znajduje się lista dostępnych magazynów. Aby zobaczyć szczegóły danego magazynu, kliknij w jego nazwę.</p>
 
-    <table class="table table-bordered table-hover warehouse_list_table">
-        <thead class="warehouse_table_header">
-            <tr>
-                <th scope="col">Nazwa</th>
-                <th scope="col">Symbol</th>
-                <th scope="col">Miasto</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for warehouse in warehouses %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover warehouse_list_table">
+            <thead class="warehouse_table_header">
                 <tr>
-                    <td><a href="{{ warehouse.get_absolute_url }}">{{ warehouse.name }}</a></td>
-                    <td>{{ warehouse.symbol }}</td>
-                    <td>{{ warehouse.city }}</td>
+                    <th scope="col">Nazwa</th>
+                    <th scope="col">Symbol</th>
+                    <th scope="col">Miasto</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for warehouse in warehouses %}
+                    <tr>
+                        <td><a href="{{ warehouse.get_absolute_url }}">{{ warehouse.name }}</a></td>
+                        <td>{{ warehouse.symbol }}</td>
+                        <td>{{ warehouse.city }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 
     <div class="col-lg-6 add_warehouse">
         <h3 class="mt-5">Dodaj magazyn</h3>
