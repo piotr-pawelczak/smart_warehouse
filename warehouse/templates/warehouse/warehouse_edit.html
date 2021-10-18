@@ -1,12 +1,19 @@
 {% extends "warehouse/base.html" %}
 
+{% load crispy_forms_tags %}
+{% load crispy_forms_filters %}
+
 {% block title %}Edycja magazynu{% endblock %}
 
 {% block content %}
+    <h1>Edycja magazynu</h1>
+    <div class="add_warehouse col-lg-6">
+        <form action="" method="post" class="form-group border border-secondary rounded p-4 mx-auto my-3">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button type="submit" class="btn btn-warning mt-3">Edytuj magazyn</button>
+        </form>
+    </div>
 
-<form action="" method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="edytuj">
-</form>
+
 {% endblock %}

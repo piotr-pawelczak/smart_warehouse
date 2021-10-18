@@ -9,14 +9,19 @@ def home_view(request):
 
 
 def warehouse_list(request):
+    """
+    Widok do obsługi listy wszystkich magazynów
+    Wyświetla listę magazynów oraz zawiera formularz do utworzenia nowego magazynu
+    """
+
     warehouses = Warehouse.objects.all()
 
+    # Obsługa formularza do utworzenia magazynu
     if request.method == 'POST':
         form = WarehouseForm(request.POST)
         if form.is_valid():
             form.save()
             form = WarehouseForm()
-
     else:
         form = WarehouseForm()
 
@@ -24,6 +29,13 @@ def warehouse_list(request):
 
 
 def warehouse_detail(request, pk):
+    """
+    Widok do obsługi pojedynczego magazynu
+    Magazyn jest pobierany poprzez identyfikator
+    Zawiera informacje dotyczące magazynu, pozwala na modyfikacje magazynu
+    Z poziomu tego widoku można dodawać regały
+    """
+
     warehouse = get_object_or_404(Warehouse, id=pk)
     shelves = warehouse.shelves.all()
 
@@ -34,15 +46,15 @@ def warehouse_detail(request, pk):
             shelf.warehouse = warehouse
             shelf.save()
 
-            cols = form.cleaned_data['cols']
-            rows = form.cleaned_data['rows']
-
-            for r in range(rows):
-                for c in range(cols):
-                    location_name = f'{shelf.name}-{c+1}-{r+1}'
-                    Location.objects.create(name=location_name, parent_shelf=shelf)
-
-            form = ShelfForm()
+            # cols = form.cleaned_data['cols']
+            # rows = form.cleaned_data['rows']
+            #
+            # for r in range(rows):
+            #     for c in range(cols):
+            #         location_name = f'{shelf.name}-{c+1}-{r+1}'
+            #         Location.objects.create(name=location_name, parent_shelf=shelf)
+            #
+            # form = ShelfForm()
     else:
         form = ShelfForm()
 
@@ -50,6 +62,9 @@ def warehouse_detail(request, pk):
 
 
 def warehouse_delete(request, pk):
+    """
+    Widok odpowiedzialny za usuwanie magazynu. Zostaje przekierowany do listy magazynów
+    """
     warehouse = get_object_or_404(Warehouse, id=pk)
     if request.method == 'POST':
         warehouse.delete()
@@ -57,6 +72,9 @@ def warehouse_delete(request, pk):
 
 
 def warehouse_edit(request, pk):
+    """
+    Widok odpowiedzialny za edycję danych istniejącego magazynu
+    """
     warehouse = Warehouse.objects.get(id=pk)
     form = WarehouseForm(instance=warehouse)
     if request.method == 'POST':

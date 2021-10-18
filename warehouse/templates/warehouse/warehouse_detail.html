@@ -1,5 +1,8 @@
 {% extends "warehouse/base.html" %}
 
+{% load crispy_forms_tags %}
+{% load crispy_forms_filters %}
+
 {% block title %}{{ warehouse.name }}{% endblock %}
 
 {% block content %}
@@ -55,9 +58,9 @@
                 <p>Brak regałów</p>
             {% endfor %}
 
-            <p>Dodaj regał</p>
-            <form action="." method="post">
-                {{ form.as_p }}
+            <form action="." method="post" class="form-group border border-secondary rounded p-4 mx-auto my-3">
+                 <p>Dodaj regał</p>
+                {{ form|crispy }}
                 <p><input type="submit" value="Dodaj">
                 {% csrf_token %}
             </form>

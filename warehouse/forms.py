@@ -26,4 +26,5 @@ class WarehouseForm(forms.ModelForm):
 class ShelfForm(forms.ModelForm):
     class Meta:
         model = Shelf
-        fields = ['name', 'rows', 'cols']
+        fields = ['name', 'columns', 'levels']
+        labels = {'name': 'Nazwa', 'columns': 'Liczba kolumn', 'levels': 'Liczba poziomów'}
