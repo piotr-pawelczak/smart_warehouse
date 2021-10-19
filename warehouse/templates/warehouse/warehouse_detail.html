@@ -36,42 +36,10 @@
             <div class="row mt-4">
                 <h4>Zarządzaj magazynem</h4>
 
-                <!-- Usunięcie magazynu -->
-                <div class="col-6 mx-auto">
-                    <!-- Przycisk usunięcia magazynu -->
-                    <button type="button" class="btn btn-danger mt-3" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                      Usuń magazyn
-                    </button>
-
-                    <!-- Potwierdzenie usunięcia magazynu -->
-                    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-                      <div class="modal-dialog">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h5 class="modal-title" id="deleteModalLabel">Potwierdź usunięcie</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                          </div>
-                          <div class="modal-body">
-                            Czy na pewno chcesz usunąć magazyn? Ta operacja jest nieodwracalna.
-                          </div>
-                          <div class="modal-footer">
-                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
-                              <form action="{% url "warehouse:warehouse_delete" warehouse.id %}" method="post">
-                                <button type="submit" class="btn btn-danger">Usuń magazyn</button>
-                                {% csrf_token %}
-                            </form>
-
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                </div> 
-                <!-- Zakończenie usuwania magazynu -->
-
                 <!-- Edycja magazynu -->
                 <div class="col-6  mx-auto">
-                    <!-- Button trigger modal -->
-                    <button type="button" class="btn btn-warning mt-3 input-block-level" data-bs-toggle="modal" data-bs-target="#editModal">
+                    <!-- Przycisk edycji magazynu -->
+                    <button type="button" class="btn btn-warning mt-3 input-block-level col-12" data-bs-toggle="modal" data-bs-target="#editModal">
                         Edytuj magazyn
                     </button>
 
@@ -103,22 +71,81 @@
                       </div>
                     </div>
                 </div>
+
+                <!-- Usunięcie magazynu -->
+                <div class="col-6 mx-auto">
+                    <!-- Przycisk usunięcia magazynu -->
+                    <button type="button" class="btn btn-danger mt-3 col-12" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                      Usuń magazyn
+                    </button>
+
+                    <!-- Potwierdzenie usunięcia magazynu -->
+                    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="deleteModalLabel">Potwierdź usunięcie</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            Czy na pewno chcesz usunąć magazyn? Ta operacja jest nieodwracalna.
+                          </div>
+                          <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                              <form action="{% url "warehouse:warehouse_delete" warehouse.id %}" method="post">
+                                <button type="submit" class="btn btn-danger">Usuń magazyn</button>
+                                {% csrf_token %}
+                            </form>
+
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                </div> 
+                <!-- Zakończenie usuwania magazynu -->
             </div>
         </div>
 
         <!-- Zarządzanie regałami -->
         <div class="col-lg-7 offset-lg-1 mt-4 mt-lg-0">
             <h4>Regały</h4>
-            {% for shelf in shelves %}
-                <h1>{{ shelf.name }}</h1>
-                <form action="{% url "warehouse:shelf_delete" shelf.id %}" method="post">
-                    <p><input type="submit" value="Usuń regał" onclick="return confirm('Czy na pewno chcesz usunąć regał?')"></p>
-                    {% csrf_token %}
-                </form>
-            {% empty %}
-                <p>Brak regałów</p>
-            {% endfor %}
 
+            <!-- Wyświetlanie regałów -->
+            <div id="accordion">
+                {% for shelf in shelves %}
+                    <div class="card">
+                        <div class="card-header">
+                          <a class="btn" data-bs-toggle="collapse" href="#collapse-{{ shelf.name }}">
+                            {{ shelf.name }}
+                          </a>
+                        </div>
+                        <div id="collapse-{{ shelf.name }}" class="collapse hide" data-bs-parent="#accordion">
+                          <div class="card-body">
+                              <!-- Informacje o regale -->
+                              <div class="row">
+                                  <p class="col-6">Kolumny: {{ shelf.columns }}</p>
+                                  <p class="col-6">Poziomy: {{ shelf.levels }}</p>
+                              </div>
+                              <!-- Przyciski -->
+                              <div class="row">
+                                  <div class="col-6">
+                                      <button class="btn btn-success col-12">Szczegóły</button>
+                                  </div>
+                                  <div class="col-6">
+                                      <form action="{% url "warehouse:shelf_delete" shelf.id %}" method="post">
+                                        <input type="submit" value="Usuń regał" onclick="return confirm('Czy na pewno chcesz usunąć regał?')" class="btn btn-danger col-12">
+                                        {% csrf_token %}
+                                      </form>
+                                  </div>
+                              </div>
+                          </div>
+                        </div>
+                      </div>
+                {% endfor %}
+            </div>
+
+
+            <!-- Dodawanie regałów -->
             <form action="." method="post" class="form-group border border-secondary rounded p-4 mx-auto my-3">
                  <p>Dodaj regał</p>
                 {{ form|crispy }}
@@ -126,6 +153,7 @@
                 {% csrf_token %}
             </form>
         </div>
+
 
     </div>
 

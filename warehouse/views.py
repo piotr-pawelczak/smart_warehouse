@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from .models import Warehouse, Location, Shelf
 from django.shortcuts import get_object_or_404
 from .forms import WarehouseForm, ShelfForm
+from django.contrib import messages
 
 
 def home_view(request):
@@ -57,11 +58,20 @@ def warehouse_detail(request, pk):
         if form.is_valid():
             shelf = form.save(commit=False)
             shelf.warehouse = warehouse
-            shelf.name = f'{warehouse.symbol}-{shelf.shelf_number}'
+            shelf_name = f'{warehouse.symbol}-{shelf.shelf_number}'
 
+            # Obsługa tej samej nazwy
+            if Shelf.objects.filter(name=shelf_name):
+                messages.error(request, 'Istnieje już regał o podanym numerze')
+                return redirect(warehouse.get_absolute_url())
+
+            shelf.name = f'{warehouse.symbol}-{shelf.shelf_number}'
             shelf.save()
             default_number = shelves.reverse()[0].shelf_number + 1
             form = ShelfForm(initial={'shelf_number': default_number})
+
+            # Utworzenie lokalizacji
+
             # cols = form.cleaned_data['cols']
             # rows = form.cleaned_data['rows']
             #
@@ -85,21 +95,6 @@ def warehouse_delete(request, pk):
     if request.method == 'POST':
         warehouse.delete()
     return redirect('/warehouses/')
-
-
-# def warehouse_edit(request, pk):
-#     """
-#     Widok odpowiedzialny za edycję danych istniejącego magazynu
-#     """
-#     warehouse = Warehouse.objects.get(id=pk)
-#     form = WarehouseForm(instance=warehouse)
-#     if request.method == 'POST':
-#         print(request.POST)
-#         form = WarehouseForm(request.POST, instance=warehouse)
-#         if form.is_valid():
-#             form.save()
-#             return redirect(f'/warehouse/{pk}')
-#     return render(request, 'warehouse/warehouse_edit.html', {'form': form})
 
 
 def shelf_delete(request, pk):
