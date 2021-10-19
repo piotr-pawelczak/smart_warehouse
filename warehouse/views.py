@@ -3,6 +3,7 @@ from .models import Warehouse, Location, Shelf
 from django.shortcuts import get_object_or_404
 from .forms import WarehouseForm, ShelfForm
 from django.contrib import messages
+import numpy as np
 
 
 def home_view(request):
@@ -57,6 +58,8 @@ def warehouse_detail(request, pk):
         form = ShelfForm(request.POST, initial={'shelf_number': default_number})
         if form.is_valid():
             shelf = form.save(commit=False)
+            cols = form.cleaned_data['columns']
+            rows = form.cleaned_data['levels']
             shelf.warehouse = warehouse
             shelf_name = f'{warehouse.symbol}-{shelf.shelf_number}'
 
@@ -71,16 +74,11 @@ def warehouse_detail(request, pk):
             form = ShelfForm(initial={'shelf_number': default_number})
 
             # Utworzenie lokalizacji
+            for lev in range(rows):
+                for col in range(cols):
+                    location_name = f'{shelf.name}-{col+1}-{lev+1}'
+                    Location.objects.create(name=location_name, parent_shelf=shelf, level_index=lev, column_index=col)
 
-            # cols = form.cleaned_data['cols']
-            # rows = form.cleaned_data['rows']
-            #
-            # for r in range(rows):
-            #     for c in range(cols):
-            #         location_name = f'{shelf.name}-{c+1}-{r+1}'
-            #         Location.objects.create(name=location_name, parent_shelf=shelf)
-            #
-            # form = ShelfForm()
     else:
         form = ShelfForm(initial={'shelf_number': default_number})
 
@@ -95,6 +93,21 @@ def warehouse_delete(request, pk):
     if request.method == 'POST':
         warehouse.delete()
     return redirect('/warehouses/')
+
+
+def shelf_detail(request, pk):
+    shelf = get_object_or_404(Shelf, id=pk)
+    locations = shelf.locations.all()
+
+    # Zamiana listy obiektów na tablicę
+    n = shelf.levels
+    table = list(locations)
+    table_2d = [table[i:i+n] for i in range(0, len(table), n)]
+    locations_table = list(map(list, zip(*table_2d)))
+    locations_table.reverse()
+
+    context = {'shelf': shelf, 'locations': locations, 'locations_table': locations_table}
+    return render(request, 'warehouse/shelf_detail.html', context)
 
 
 def shelf_delete(request, pk):

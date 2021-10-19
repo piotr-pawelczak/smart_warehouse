@@ -52,9 +52,21 @@ class Shelf(models.Model):
 class Location(models.Model):
     name = models.CharField(max_length=200)
     parent_shelf = models.ForeignKey(Shelf, related_name='locations', on_delete=models.CASCADE)
+    column_index = models.SmallIntegerField(default=1, validators=[MinValueValidator(1)])
+    level_index = models.SmallIntegerField(default=1, validators=[MinValueValidator(1)])
 
     class Meta:
         ordering = ('name',)
+
+    # @property
+    # def column_index(self):
+    #     name_list = self.name.split('-')
+    #     return name_list[1]
+    #
+    # @property
+    # def level_index(self):
+    #     name_list = self.name.split('-')
+    #     return name_list[2]
 
     def __str__(self):
         return self.name

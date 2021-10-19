@@ -129,7 +129,9 @@
                               <!-- Przyciski -->
                               <div class="row">
                                   <div class="col-6">
-                                      <button class="btn btn-success col-12">Szczegóły</button>
+                                      <a href="{% url "warehouse:shelf_detail" shelf.id %}">
+                                          <button class="btn btn-success col-12">Szczegóły</button>
+                                      </a>
                                   </div>
                                   <div class="col-6">
                                       <form action="{% url "warehouse:shelf_delete" shelf.id %}" method="post">

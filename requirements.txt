@@ -10,3 +10,4 @@ whitenoise==5.3.0
 
 
 django-crispy-forms~=1.13.0
+numpy~=1.21.2
