@@ -122,7 +122,7 @@
             <form action="." method="post" class="form-group border border-secondary rounded p-4 mx-auto my-3">
                  <p>Dodaj regał</p>
                 {{ form|crispy }}
-                <p><input type="submit" value="Dodaj">
+                <input type="submit" value="Dodaj" class="btn btn-success mx-auto mt-3">
                 {% csrf_token %}
             </form>
         </div>

@@ -37,6 +37,7 @@ class Warehouse(models.Model):
 
 class Shelf(models.Model):
     warehouse = models.ForeignKey(Warehouse, related_name='shelves', on_delete=models.CASCADE)
+    shelf_number = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
     name = models.CharField(unique=True, max_length=50)
     columns = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
     levels = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
