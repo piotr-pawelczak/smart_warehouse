@@ -6,6 +6,7 @@
 {% block title %}{{ warehouse.name }}{% endblock %}
 
 {% block content %}
+    <!-- Informacje o magazynie -->
     <h1>{{ warehouse.name }}</h1>
     <div class="row">
         <div class="col-lg-4">
@@ -31,21 +32,81 @@
                 <p>Brak opisu.</p>
             {% endif %}
 
+            <!-- Zarządzanie magazynem -->
             <div class="row mt-4">
                 <h4>Zarządzaj magazynem</h4>
-                <div class="col-6">
-                    <form action="{% url "warehouse:warehouse_delete" warehouse.id %}" method="post">
-                        <button type="submit" class="btn btn-danger mt-3">Usuń magazyn</button>
-                        {% csrf_token %}
-                    </form>
-                </div>
-                <div class="col-6">
-                    <a href="{% url "warehouse:warehouse_edit" warehouse.id %}"><button type="submit" class="btn btn-warning mt-3">Edytuj magazyn</button></a>
+
+                <!-- Usunięcie magazynu -->
+                <div class="col-6 mx-auto">
+                    <!-- Przycisk usunięcia magazynu -->
+                    <button type="button" class="btn btn-danger mt-3" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                      Usuń magazyn
+                    </button>
+
+                    <!-- Potwierdzenie usunięcia magazynu -->
+                    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="deleteModalLabel">Potwierdź usunięcie</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            Czy na pewno chcesz usunąć magazyn? Ta operacja jest nieodwracalna.
+                          </div>
+                          <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                              <form action="{% url "warehouse:warehouse_delete" warehouse.id %}" method="post">
+                                <button type="submit" class="btn btn-danger">Usuń magazyn</button>
+                                {% csrf_token %}
+                            </form>
+
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                </div> 
+                <!-- Zakończenie usuwania magazynu -->
+
+                <!-- Edycja magazynu -->
+                <div class="col-6  mx-auto">
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-warning mt-3 input-block-level" data-bs-toggle="modal" data-bs-target="#editModal">
+                        Edytuj magazyn
+                    </button>
+
+                    <!-- Modal edycji magazynu -->
+                    <div class="modal fade edit-modal" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="editModalLabel">Edytuj magazyn</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                              <form action="" method="post" class="crispy-form-margin">
+                                  {% csrf_token %}
+                                  <p class="mt-1">{{ edit_form.name|as_crispy_field}}</p>
+                                  <p class="mt-1">{{ edit_form.symbol|as_crispy_field}}</p>
+                                  <p class="mt-1">{{ edit_form.city|as_crispy_field}}</p>
+                                  <p class="mt-1">{{ edit_form.address|as_crispy_field}}</p>
+                                  <p class="mt-1">{{ edit_form.description|as_crispy_field}}</p>
+                                  <div class="my-auto mx-auto row">
+                                      <input type="submit" value="Edytuj" class="btn btn-success mx-auto col-5">
+                                      <button type="button" class="btn btn-danger mx-auto col-5 offset-2" data-bs-dismiss="modal">Anuluj</button>
+                                  </div>
+
+                              </form>
+                          </div>
+
+                        </div>
+                      </div>
+                    </div>
                 </div>
             </div>
-
         </div>
 
+        <!-- Zarządzanie regałami -->
         <div class="col-lg-7 offset-lg-1 mt-4 mt-lg-0">
             <h4>Regały</h4>
             {% for shelf in shelves %}

@@ -39,7 +39,16 @@ def warehouse_detail(request, pk):
     warehouse = get_object_or_404(Warehouse, id=pk)
     shelves = warehouse.shelves.all()
 
-    if request.method == 'POST':
+    # Formularz do edycji magazynu
+    edit_form = WarehouseForm(instance=warehouse)
+    if request.method == 'POST' and 'description' in request.POST:
+        print(request.POST)
+        edit_form = WarehouseForm(request.POST, instance=warehouse)
+        if edit_form.is_valid():
+            edit_form.save()
+
+    # Formularz do utworzenia regału
+    if request.method == 'POST' and 'description' not in request.POST:
         form = ShelfForm(request.POST)
         if form.is_valid():
             shelf = form.save(commit=False)
@@ -58,7 +67,7 @@ def warehouse_detail(request, pk):
     else:
         form = ShelfForm()
 
-    return render(request, 'warehouse/warehouse_detail.html', {'warehouse': warehouse, 'form': form, 'shelves': shelves})
+    return render(request, 'warehouse/warehouse_detail.html', {'warehouse': warehouse, 'form': form, 'shelves': shelves, 'edit_form': edit_form})
 
 
 def warehouse_delete(request, pk):
@@ -71,19 +80,19 @@ def warehouse_delete(request, pk):
     return redirect('/warehouses/')
 
 
-def warehouse_edit(request, pk):
-    """
-    Widok odpowiedzialny za edycję danych istniejącego magazynu
-    """
-    warehouse = Warehouse.objects.get(id=pk)
-    form = WarehouseForm(instance=warehouse)
-    if request.method == 'POST':
-        print(request.POST)
-        form = WarehouseForm(request.POST, instance=warehouse)
-        if form.is_valid():
-            form.save()
-            return redirect(f'/warehouse/{pk}')
-    return render(request, 'warehouse/warehouse_edit.html', {'form': form})
+# def warehouse_edit(request, pk):
+#     """
+#     Widok odpowiedzialny za edycję danych istniejącego magazynu
+#     """
+#     warehouse = Warehouse.objects.get(id=pk)
+#     form = WarehouseForm(instance=warehouse)
+#     if request.method == 'POST':
+#         print(request.POST)
+#         form = WarehouseForm(request.POST, instance=warehouse)
+#         if form.is_valid():
+#             form.save()
+#             return redirect(f'/warehouse/{pk}')
+#     return render(request, 'warehouse/warehouse_edit.html', {'form': form})
 
 
 def shelf_delete(request, pk):
