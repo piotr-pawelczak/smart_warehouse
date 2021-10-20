@@ -3,19 +3,20 @@ from .models import Warehouse, Location, Shelf
 from django.shortcuts import get_object_or_404
 from .forms import WarehouseForm, ShelfForm
 from django.contrib import messages
-import numpy as np
+from django.views.decorators.cache import cache_control
+from django.utils.translation import activate
 
 
 def home_view(request):
     return render(request, 'warehouse/base.html')
 
 
+@cache_control(no_cache=True)
 def warehouse_list(request):
     """
     Widok do obsługi listy wszystkich magazynów
     Wyświetla listę magazynów oraz zawiera formularz do utworzenia nowego magazynu
     """
-
     warehouses = Warehouse.objects.all()
 
     # Obsługa formularza do utworzenia magazynu
@@ -23,7 +24,8 @@ def warehouse_list(request):
         form = WarehouseForm(request.POST)
         if form.is_valid():
             form.save()
-            form = WarehouseForm()
+            messages.success(request, 'Pomyślnie dodano nowy magazyn!')
+            return redirect('/warehouses/')
     else:
         form = WarehouseForm()
 
@@ -77,7 +79,7 @@ def warehouse_detail(request, pk):
             for lev in range(rows):
                 for col in range(cols):
                     location_name = f'{shelf.name}-{col+1}-{lev+1}'
-                    Location.objects.create(name=location_name, parent_shelf=shelf, level_index=lev, column_index=col)
+                    Location.objects.create(name=location_name, parent_shelf=shelf, level_index=lev+1, column_index=col+1)
 
     else:
         form = ShelfForm(initial={'shelf_number': default_number})
@@ -92,6 +94,7 @@ def warehouse_delete(request, pk):
     warehouse = get_object_or_404(Warehouse, id=pk)
     if request.method == 'POST':
         warehouse.delete()
+        messages.warning(request, 'Magazyn został usunięty')
     return redirect('/warehouses/')
 
 
@@ -106,7 +109,45 @@ def shelf_detail(request, pk):
     locations_table = list(map(list, zip(*table_2d)))
     locations_table.reverse()
 
-    context = {'shelf': shelf, 'locations': locations, 'locations_table': locations_table}
+    # Formularz do edycji regału
+    edit_form = ShelfForm(instance=shelf)
+    if request.method == 'POST':
+        edit_form = ShelfForm(request.POST, instance=shelf)
+        if edit_form.is_valid():
+            columns = edit_form.cleaned_data['columns']
+            levels = edit_form.cleaned_data['levels']
+
+            new_shelf = edit_form.save(commit=False)
+            shelf_name = f'{new_shelf.warehouse.symbol}-{new_shelf.shelf_number}'
+
+            # Obsługa tej samej nazwy
+            if Shelf.objects.filter(name=shelf_name) and shelf_name != new_shelf.name:
+                messages.error(request, 'Istnieje już regał o podanym numerze')
+                return redirect(shelf.get_absolute_url())
+            else:
+                new_shelf.name = shelf_name
+                new_shelf.save()
+
+            # Regeneracja lokalizacji
+            for lev in range(levels):
+                for col in range(columns):
+                    location_name = f'{shelf.name}-{col + 1}-{lev + 1}'
+                    # Jeżeli lokalizacja jest nowa
+                    if not Location.objects.filter(name=location_name):
+                        Location.objects.create(name=location_name, parent_shelf=shelf, level_index=lev+1, column_index=col+1)
+
+            for elem in Location.objects.filter(column_index__gt=columns):
+                elem.delete()
+            for elem in Location.objects.filter(level_index__gt=levels):
+                elem.delete()
+            return redirect(shelf.get_absolute_url())
+
+        else:
+            messages.error(request, 'Nie udało się zaktualizować regału')
+
+
+
+    context = {'shelf': shelf, 'locations': locations, 'locations_table': locations_table, 'edit_form': edit_form}
     return render(request, 'warehouse/shelf_detail.html', context)
 
 

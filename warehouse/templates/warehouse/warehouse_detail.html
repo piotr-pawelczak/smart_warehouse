@@ -129,7 +129,7 @@
                               <!-- Przyciski -->
                               <div class="row">
                                   <div class="col-6">
-                                      <a href="{% url "warehouse:shelf_detail" shelf.id %}">
+                                      <a href="{{ shelf.get_absolute_url }}">
                                           <button class="btn btn-success col-12">Szczegóły</button>
                                       </a>
                                   </div>

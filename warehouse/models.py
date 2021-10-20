@@ -32,10 +32,20 @@ class Warehouse(models.Model):
         Funkcja zwracająca adres url magazynu potrzebny do widoku warehouse_detail
         :return: Adres url magazynu
         """
-        return reverse('warehouse:warehouse_detail', args=[self.id])
+        return reverse('warehouse:warehouse_detail', args=[self.pk])
 
 
 class Shelf(models.Model):
+    """
+    Model reprezentujący regał. Pola modelu oznaczają:
+    *warehouse: magazyn, do którego należy regał
+    *shelf_number: numer regału
+    *name: nazwa regału, generowana automatycznie jako symbol_magazynu-numer_regalu
+    *columns: liczba kolumn
+    *levels: liczba poziomów
+
+    shelf.locations.all() zwraca wszystkie lokalizacje powiązane z regałem
+    """
     warehouse = models.ForeignKey(Warehouse, related_name='shelves', on_delete=models.CASCADE)
     shelf_number = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
     name = models.CharField(unique=True, max_length=50)
@@ -47,6 +57,9 @@ class Shelf(models.Model):
 
     class Meta:
         verbose_name_plural = "Shelves"
+
+    def get_absolute_url(self):
+        return reverse('warehouse:shelf_detail', args=[self.pk])
 
 
 class Location(models.Model):

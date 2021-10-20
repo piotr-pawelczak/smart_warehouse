@@ -37,3 +37,7 @@ body {
     padding: 0px;
     font-size:12px;
 }
+
+.warehouse_link {
+    text-decoration: none;
+}
