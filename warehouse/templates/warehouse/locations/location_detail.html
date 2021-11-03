@@ -1,0 +1,14 @@
+{% extends "warehouse/base.html" %}
+
+{%  block title %}Lokalizacja{% endblock %}
+
+{% block content %}
+    <h1>Lokalizacja {{ location }}</h1>
+
+    {% for productlocation in location.products.all %}
+        <p>{{ productlocation.product.name }}: {{ productlocation.quantity }}</p>
+    {% empty %}
+        <p>Brak produktów w tej lokalizacji</p>
+    {% endfor %}
+
+{% endblock %}

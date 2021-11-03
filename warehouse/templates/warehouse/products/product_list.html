@@ -1,0 +1,31 @@
+{% extends "warehouse/base.html" %}
+
+{% block title %}Produkty{% endblock %}
+
+{% block content %}
+
+    <h1>Produkty</h1>
+    <a href="{% url "warehouse:product_create" %}" class="btn btn-success">Nowy produkt</a>
+    <div class="table-responsive mt-3">
+        <table class="table table-bordered table-hover warehouse_list_table">
+            <thead class="warehouse_table_header">
+                <tr>
+                    <th scope="col">Nazwa</th>
+                    <th scope="col">Cena</th>
+                    <th scope="col">ID</th>
+                    <th scope="col">Stan</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                    <tr>
+                        <td><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></td>
+                        <td>{{ product.id }}</td>
+                        <td>{{ product.total_quantity }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}

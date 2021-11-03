@@ -49,9 +49,9 @@
             <tr>
             {% for cell in row %}
                 <td>
-                    <button type="button" class="btn btn-secondary btn-square-md">
-                        {{ cell }}
-                    </button>
+                    <a href="{% url "warehouse:location_detail" cell.id %}">
+                        <input type="submit" class="btn-square-md btn btn-secondary" value="{{ cell }}">
+                    </a>
                 </td>
             {% endfor %}
             </tr>

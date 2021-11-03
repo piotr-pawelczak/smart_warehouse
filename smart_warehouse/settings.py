@@ -34,6 +34,7 @@ ALLOWED_HOSTS = ['smart-warehouse-web.herokuapp.com']
 # Application definition
 
 INSTALLED_APPS = [
+    'documents.apps.DocumentsConfig',
     'warehouse.apps.WarehouseConfig',
     'django.contrib.admin',
     'django.contrib.auth',

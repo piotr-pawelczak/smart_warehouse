@@ -59,8 +59,9 @@
                                   <p class="mt-1">{{ edit_form.city|as_crispy_field}}</p>
                                   <p class="mt-1">{{ edit_form.address|as_crispy_field}}</p>
                                   <p class="mt-1">{{ edit_form.description|as_crispy_field}}</p>
+                                  <p class="mt-1">{{ edit_form.type|as_crispy_field}}</p>
                                   <div class="my-auto mx-auto row">
-                                      <input type="submit" value="Edytuj" class="btn btn-success mx-auto col-5">
+                                      <input type="submit" value="Edytuj" class="btn btn-success mx-auto col-5" name="edit_warehouse_button">
                                       <button type="button" class="btn btn-danger mx-auto col-5 offset-2" data-bs-dismiss="modal">Anuluj</button>
                                   </div>
 
@@ -151,7 +152,7 @@
             <form action="." method="post" class="form-group border border-secondary rounded p-4 mx-auto my-3">
                  <p>Dodaj regał</p>
                 {{ form|crispy }}
-                <input type="submit" value="Dodaj" class="btn btn-success mx-auto mt-3">
+                <input type="submit" value="Dodaj" class="btn btn-success mx-auto mt-3" name="create_shelf_button">
                 {% csrf_token %}
             </form>
         </div>

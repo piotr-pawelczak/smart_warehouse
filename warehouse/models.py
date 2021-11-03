@@ -1,6 +1,9 @@
 from django.db import models
 from django.urls import reverse
 from django.core.validators import MinValueValidator
+from django.utils.text import slugify
+from custom_functions.accents import remove_accents
+import datetime
 
 # Create your models here.
 
@@ -18,11 +21,20 @@ class Warehouse(models.Model):
     Warehouse > Shelf > Location
     warehouse.shelves.all() zwraca wszystkie
     """
+
+    WAREHOUSE_TYPE_CHOICES = [
+        ("storage", 'Przechowywanie'),
+        ("receiving", 'Przyjmowanie'),
+        ("shipping", 'Wysyłka')
+    ]
+
     name = models.CharField(max_length=100, unique=True)
     symbol = models.CharField(max_length=3, unique=True)
     city = models.CharField(max_length=100)
     address = models.CharField(max_length=100)
     description = models.TextField(blank=True)
+    slug = models.SlugField(max_length=100, blank=True, allow_unicode=True, unique=True)
+    type = models.CharField(max_length=20, choices=WAREHOUSE_TYPE_CHOICES, default="storage")
 
     def __str__(self):
         return self.name
@@ -32,7 +44,11 @@ class Warehouse(models.Model):
         Funkcja zwracająca adres url magazynu potrzebny do widoku warehouse_detail
         :return: Adres url magazynu
         """
-        return reverse('warehouse:warehouse_detail', args=[self.pk])
+        return reverse('warehouse:warehouse_detail', args=[self.slug])
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(remove_accents(self.name))
+        super(Warehouse, self).save(*args, **kwargs)
 
 
 class Shelf(models.Model):
@@ -61,6 +77,10 @@ class Shelf(models.Model):
     def get_absolute_url(self):
         return reverse('warehouse:shelf_detail', args=[self.pk])
 
+    def save(self, *args, **kwargs):
+        self.name = f'{self.warehouse.symbol}-{self.shelf_number}'
+        super(Shelf, self).save(*args, **kwargs)
+
 
 class Location(models.Model):
     name = models.CharField(max_length=200)
@@ -71,29 +91,24 @@ class Location(models.Model):
     class Meta:
         ordering = ('name',)
 
-    # @property
-    # def column_index(self):
-    #     name_list = self.name.split('-')
-    #     return name_list[1]
-    #
-    # @property
-    # def level_index(self):
-    #     name_list = self.name.split('-')
-    #     return name_list[2]
-
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        self.name = f'{self.parent_shelf.warehouse.symbol}-{self.parent_shelf.shelf_number}-{self.column_index}-{self.level_index}'
+        super(Location, self).save(*args, **kwargs)
 
 
 class Product(models.Model):
     name = models.CharField(max_length=200)
+    unit = models.CharField(max_length=200)
     description = models.TextField(blank=True)
+    slug = models.SlugField(max_length=100, blank=True, allow_unicode=True, unique=True)
+    sku = models.CharField(max_length=20, unique=True)
+    weight = models.DecimalField(max_digits=8, decimal_places=3)
 
     class Meta:
         ordering = ('name',)
-
-    def __str__(self):
-        return self.name
 
     @property
     def total_quantity(self):
@@ -102,10 +117,21 @@ class Product(models.Model):
             quantity += q.quantity
         return quantity
 
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('warehouse:product_detail', args=[self.pk, self.slug])
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(remove_accents(self.name))
+        super(Product, self).save(*args, **kwargs)
+
 
 class ProductLocation(models.Model):
     product = models.ForeignKey(Product, related_name='locations', on_delete=models.CASCADE)
     location = models.ForeignKey(Location, related_name='products', on_delete=models.CASCADE)
+    lot_number = models.CharField(default=datetime.datetime.now().strftime("%d/%m/%Y"), max_length=10)
     quantity = models.PositiveIntegerField()
 
     def __str__(self):
