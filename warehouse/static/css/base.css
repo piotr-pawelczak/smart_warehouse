@@ -46,3 +46,28 @@ body {
     font-size:12px;
     margin: 0px;
 }
+
+.grn-table .product-table-grn {
+    min-width: 200px;
+}
+
+.grn-table .count-table-grn {
+    min-width: 100px;
+}
+
+.grn-table .price-table-grn {
+    min-width: 180px;
+}
+
+.grn-table .warehouse-table-grn {
+    min-width: 200px;
+}
+
+.grn-table .shelf-table-grn {
+    min-width: 100px;
+}
+
+.grn-table .location-table-grn {
+    min-width: 120px;
+}
+

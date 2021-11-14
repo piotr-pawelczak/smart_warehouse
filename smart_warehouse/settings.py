@@ -38,11 +38,15 @@ INSTALLED_APPS = [
     'warehouse.apps.WarehouseConfig',
     'django.contrib.admin',
     'django.contrib.auth',
+    'polymorphic',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'crispy_forms',
+    'widget_tweaks',
+    'django_filters',
+    'ajax_select',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'

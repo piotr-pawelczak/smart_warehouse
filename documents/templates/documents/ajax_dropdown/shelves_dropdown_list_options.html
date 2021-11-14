@@ -1,0 +1,4 @@
+<option value="">---------</option>
+{% for shelf in shelves %}
+    <option value="{{ shelf.id }}">{{ shelf.name }}</option>
+{% endfor %}

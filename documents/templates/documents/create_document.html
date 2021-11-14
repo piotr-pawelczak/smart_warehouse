@@ -1,0 +1,42 @@
+{% extends "warehouse/base.html" %}
+
+{% block title %}
+    Dokument
+{% endblock title %}
+
+{% block content %}
+{% load widget_tweaks %}
+    <form method="post" id="documentForm" data-url="{% url "documents:ajax_load_product_locations" %}">
+        {% csrf_token %}
+        <div class="form-group">
+            {% for field in form.visible_fields %}
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field|add_class:"form-control" }}
+            {% endfor %}
+            {% for field in form_product.visible_fields %}
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field|add_class:"form-control" }}
+            {% endfor %}
+        </div>
+    </form>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+
+    {% if document_type == 'GIN' %}
+    <script>
+        $("#id_product").change(function () {
+            var url = $("#documentForm").attr("data-url");
+            var productId = $(this).val();
+
+            $.ajax({
+                url: url,
+                data: {
+                    'product': productId
+                },
+                success: function (data) {
+                    $("#id_location").html(data)
+                }
+            });
+        });
+    </script>
+    {% endif %}
+{% endblock content %}
