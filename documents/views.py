@@ -24,7 +24,7 @@ def goods_received_create(request):
     ProductFormSet = formset_factory(ProductDocumentReceivedForm, extra=1)
 
     year = datetime.datetime.now().year
-    counter = len(GoodsReceivedNote.objects.filter(created__year='2021'))
+    counter = len(GoodsReceivedNote.objects.filter(created__year='2021')) + 1
     document_number = f'PZ/{year}/{counter}'
 
     if request.method == 'POST':
