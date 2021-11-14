@@ -71,3 +71,7 @@ body {
     min-width: 120px;
 }
 
+.grn-table select {
+    text-overflow: ellipsis;
+}
+

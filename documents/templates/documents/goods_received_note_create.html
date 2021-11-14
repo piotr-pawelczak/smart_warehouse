@@ -9,68 +9,11 @@
 
     <h1>Nowe przyjęcie zewnętrzne</h1>
 
-{#    <form method="post" action="" id="documentForm" data-url="{% url "documents:ajax_load_shelves" %}" location-url="{% url "documents:ajax_load_locations" %}">#}
-{#        {% csrf_token %}#}
-{#        <div class="form-group mt-3">#}
-{#            <div class="my-2">#}
-{#                <label>Numer dokumentu</label>#}
-{#                {{ form.document_number|add_class:"form-control" }}#}
-{#            </div>#}
-{#            <div class="my-2">#}
-{#                <label>Kontrahent</label>#}
-{#                {{ form.contractor|add_class:"form-control" }}#}
-{#            </div>#}
-{#            {{ formset.management_form }}#}
-{#            <div id="form-set">#}
-{#                {% for form_product in formset %}#}
-{#                <div class="border border-1 p-2 border-dark rounded-2 my-3">#}
-{#                    <div class="row">#}
-{#                        <div class="my-2 col-md-6 col-sm-12">#}
-{#                            <label>Produkt</label>#}
-{#                            {{ form_product.product|as_crispy_field }}#}
-{#                        </div>#}
-{#                        <div class="my-2 col-md-3 col-sm-6">#}
-{#                            <label>Ilość</label>#}
-{#                            {{ form_product.quantity|as_crispy_field }}#}
-{#                        </div>#}
-{#                        <div class="my-2 col-md-3 col-sm-6">#}
-{#                            <label>Cena jednostkowa</label>#}
-{#                            <div class="input-group">#}
-{#                                {{ form_product.price|as_crispy_field }}#}
-{#                                <div class="input-group-append">#}
-{#                                    <span class="input-group-text">zł</span>#}
-{#                                </div>#}
-{#                            </div>#}
-{#                        </div>#}
-{#                    </div>#}
-{##}
-{#                    <div class="row">#}
-{#                        <div class="col-md-4 my-2">#}
-{#                            <label>Magazyn</label>#}
-{#                            {{ form_product.warehouse|as_crispy_field }}#}
-{#                        </div>#}
-{#                        <div class="col-md-4 my-2">#}
-{#                            <label>Regał</label>#}
-{#                            {{ form_product.shelf|as_crispy_field }}#}
-{#                        </div>#}
-{#                        <div class="col-md-4 my-2">#}
-{#                            <label>Lokalizacja</label>#}
-{#                            {{ form_product.location|as_crispy_field }}#}
-{#                        </div>#}
-{#                    </div>#}
-{#                </div>#}
-{#                {% endfor %}#}
-{#            </div>#}
-{#            <input type="button" value="Add more" id="add_more">#}
-{#        </div>#}
-{#        <input type="submit" value="Zatwierdź dokument">#}
-{#    </form>#}
-
     <form method="post" action="" id="documentForm" data-url="{% url "documents:ajax_load_shelves" %}" location-url="{% url "documents:ajax_load_locations" %}">
         {% csrf_token %}
         {{ form|crispy }}
         <div class="table-responsive">
-            <table border="0" cellpadding="0" cellspacing="0" class="table mt-3 grn-table">
+            <table class="table mt-3 grn-table">
                 <thead>
                     <tr>
                         <th class="product-table-grn">Produkt</th>
@@ -98,70 +41,21 @@
             </table>
         </div>
         {{ formset.management_form }}
-        <input type="submit" value="Zatwierdź dokument">
+        <input type="submit" class="btn btn-success mt-3" value="Zatwierdź dokument">
     </form>
-
-
-{#    <div id="empty_form" style="display: none">#}
-{#        <div class="border border-1 p-2 border-dark rounded-2 my-3">#}
-{#            <div class="row">#}
-{#                <div class="my-2 col-md-6 col-sm-12">#}
-{#                    <label>Produkt</label>#}
-{#                    {{ formset.empty_form.product|as_crispy_field }}#}
-{#                </div>#}
-{#                <div class="my-2 col-md-3 col-sm-6">#}
-{#                    <label>Ilość</label>#}
-{#                    {{ formset.empty_form.quantity|as_crispy_field }}#}
-{#                </div>#}
-{#                <div class="my-2 col-md-3 col-sm-6">#}
-{#                    <label>Cena jednostkowa</label>#}
-{#                    <div class="input-group">#}
-{#                        {{ formset.empty_form.price|as_crispy_field }}#}
-{#                        <div class="input-group-append">#}
-{#                            <span class="input-group-text">zł</span>#}
-{#                        </div>#}
-{#                    </div>#}
-{#                </div>#}
-{#            </div>#}
-{##}
-{#            <div class="row">#}
-{#                <div class="col-md-4 my-2">#}
-{#                    <label>Magazyn</label>#}
-{#                    {{ formset.empty_form.warehouse|as_crispy_field }}#}
-{#                </div>#}
-{#                <div class="col-md-4 my-2">#}
-{#                    <label>Regał</label>#}
-{#                    {{ formset.empty_form.shelf|as_crispy_field }}#}
-{#                </div>#}
-{#                <div class="col-md-4 my-2">#}
-{#                    <label>Lokalizacja</label>#}
-{#                    {{ formset.empty_form.location|as_crispy_field }}#}
-{#                </div>#}
-{#            </div>#}
-{#        </div>#}
-{#    </div>#}
-
 
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="{% static 'js/jquery.formset.js' %}"></script>
+
+    <!-- Skrypt do obsługi formset -->
     <script type="text/javascript">
         $(function (){
             $('#documentForm tbody tr').formset();
         });
     </script>
+
+    <!-- Skrypt do aktualizacji listy -->
     <script>
-
-        {#$('#add_more').click(function (){#}
-        {##}
-        {#    formsetDiv = $("#form-set");#}
-        {#    total_forms = $('[name="form-TOTAL_FORMS"]');#}
-        {#    form_idx = total_forms.val();#}
-        {#    alert(form_idx);#}
-        {#    formsetDiv.append($('#empty_form').html().replaceAll("__prefix__", form_idx));#}
-        {#    total_forms.val(parseInt(form_idx)+1);#}
-        {##}
-        {# });#}
-
         document.body.addEventListener('change', function (event) {
             const re_warehouse = new RegExp("^(id_form-[0-9]*-warehouse)$");
             const re_shelf = new RegExp("^(id_form-[0-9]*-shelf)$");
@@ -174,7 +68,9 @@
             if(re_warehouse.test(event.target.id)) {
                 var url = $("#documentForm").attr("data-url");
                 var warehouseId = $(id_warehouse).val();
+
                 $(id_location).prop('selectedIndex', 0);
+                $(id_location).html('<option value="">---------</option>')
 
                 $.ajax({
                     url: url,
@@ -185,6 +81,11 @@
                         $(id_shelf).html(data)
                     }
                 });
+
+                if(warehouseId === ''){
+                    $(id_shelf).prop('selectedIndex', 0);
+                    $(id_shelf).html('<option value="">---------</option>')
+                }
             }
 
             if(re_shelf.test(event.target.id)) {
@@ -200,6 +101,10 @@
                         $(id_location).html(data)
                     }
                 });
+
+                if(shelfId === ''){
+                    $(id_location).prop('selectedIndex', 0);
+                }
             }
 
         });
