@@ -9,9 +9,14 @@
 
     <h1>Nowe przyjęcie zewnętrzne</h1>
 
+    <div class="card bg-light text-black my-3">
+        <div class="card-body">Numer dokumentu: {{ document_number }}</div>
+    </div>
     <form method="post" action="" id="documentForm" data-url="{% url "documents:ajax_load_shelves" %}" location-url="{% url "documents:ajax_load_locations" %}">
         {% csrf_token %}
-        {{ form|crispy }}
+        <label>Kontrahent</label>
+        {{ form.contractor|add_class:"form-control" }}
+
         <div class="table-responsive">
             <table class="table mt-3 grn-table">
                 <thead>

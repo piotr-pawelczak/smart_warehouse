@@ -22,25 +22,29 @@ def goods_issue_create(request):
 
 def goods_received_create(request):
     ProductFormSet = formset_factory(ProductDocumentReceivedForm, extra=1)
-    formset = ProductFormSet()
-    form = GoodsReceivedForm()
+
+    year = datetime.datetime.now().year
+    counter = len(GoodsReceivedNote.objects.filter(created__year='2021'))
+    document_number = f'PZ/{year}/{counter}'
 
     if request.method == 'POST':
         form = GoodsReceivedForm(request.POST)
         formset = ProductFormSet(request.POST)
         if form.is_valid() and formset.is_valid():
-            new_document = form.save()
+            new_document = form.save(commit=False)
+            new_document.document_number = document_number
             new_document.save()
             for product_form in formset.forms:
                 new_product = product_form.save(commit=False)
                 new_product.document = new_document
                 new_product.save()
             return redirect(reverse('documents:document_create'))
-        else:
-            form = GoodsReceivedForm()
-            formset = ProductFormSet()
 
-    context = {'formset': formset, 'form': form}
+    else:
+        form = GoodsReceivedForm()
+        formset = ProductFormSet()
+
+    context = {'formset': formset, 'form': form, 'document_number': document_number}
     return render(request, 'documents/goods_received_note_create.html', context)
 
 

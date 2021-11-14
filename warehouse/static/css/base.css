@@ -73,5 +73,7 @@ body {
 
 .grn-table select {
     text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 

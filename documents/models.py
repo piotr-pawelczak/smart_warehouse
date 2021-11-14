@@ -24,7 +24,6 @@ class GoodsReceivedNote(Document):
 
 class GoodsIssueNote(Document):
     contractor = models.ForeignKey(Contractor, on_delete=models.CASCADE)
-    document_type = 'GIN'
 
 
 class InternalGoodsIssueNote(Document):
