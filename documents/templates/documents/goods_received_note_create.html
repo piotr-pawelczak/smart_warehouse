@@ -35,7 +35,7 @@
                         <tr id="formTemplate">
                             <td>
                                 {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
-                                {{ product_form.product|add_class:"form-control" }}
+                                {{ product_form.product|add_class:"product_search form-control"}}
                             </td>
                             <td>{{ product_form.quantity|add_class:"form-control" }}</td>
                             <td>
@@ -99,6 +99,10 @@
                 $(id_shelf).prop('selectedIndex', 0);
                 $(id_product).prop('selectedIndex', 0);
 
+                $(document).ready(function (){
+                    $(".product_search").select2({placeholder: 'Wybierz produkt'});
+                });
+
             });
         })
     </script>
@@ -160,4 +164,11 @@
     </script>
 
 
+{#    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>#}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.12/js/select2.min.js" integrity="sha512-5+FrEmSijjxRArJWeLcCIEgoQYAgU0gSa9MgNMN+tVSS+MPZsEk9a7OkPZr7AzjNJng1Kl+tXOQVtJcsU+Ax0w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        $(document).ready(function (){
+            $(".product_search").select2({placeholder: 'Wybierz produkt'});
+        });
+    </script>
 {% endblock %}

@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from documents.forms import *
-from django.forms import formset_factory, inlineformset_factory
+from django.forms import inlineformset_factory
 from warehouse.models import ProductLocation, Warehouse, Shelf
 
 
@@ -24,6 +24,8 @@ def goods_issue_create(request):
     context = {'form': form, 'form_product': form_product, 'document_type': document_type}
     return render(request, 'documents/create_document.html', context)
 
+
+# ------------------------------------------ Goods Received Note Views -------------------------------------------------
 
 def goods_received_create(request):
     ProductFormSet = inlineformset_factory(Document, ProductDocument, form=ProductDocumentReceivedForm, extra=1, can_delete=True)
@@ -70,12 +72,15 @@ def goods_received_create(request):
                             lot_number=lot_number,
                             quantity=new_product.quantity
                         )
-                    messages.success(request, f'Pomyślnie utworzono dokument {document_number}.')
-                else:
-                    messages.success(request, f'Pomyślnie utworzono wersję roboczą dokumentu.')
+
+            if new_document.confirmed:
+                messages.success(request, f'Pomyślnie utworzono dokument {document_number}.')
+            else:
+                messages.success(request, f'Pomyślnie utworzono wersję roboczą dokumentu.')
             return redirect(reverse('documents:document_create'))
         else:
-            messages.error(request, 'Poprawnie uzupełnij wszystkie pola. Jeżeli formularz dodawania produktu jest pusty, usuń go.')
+            messages.error(request, 'Poprawnie uzupełnij wszystkie pola. Jeżeli formularz dodawania produktu jest '
+                                    'pusty, usuń go.')
     else:
         form = GoodsReceivedForm()
         formset = ProductFormSet()
@@ -113,6 +118,8 @@ def goods_received_notes_update(request):
     context = {'edit_form': edit_form, 'document_number': grn.document_number, 'formset': formset}
     return render(request, 'documents/goods_received_note_update.html', context)
 
+
+# ----------------------------------- Functions to handle AJAX form refresh --------------------------------------------
 
 def load_product_locations(request):
     product_id = request.GET.get('product')
