@@ -32,6 +32,7 @@ class GoodsReceivedNoteAdmin(PolymorphicChildModelAdmin):
 class DocumentAdmin(PolymorphicParentModelAdmin):
     base_model = Document
     child_models = (GoodsIssueNote, InternalGoodsIssueNote, GoodsReceivedNote)
+    list_display = ['document_number', 'confirmed', 'created']
 
 
 @admin.register(Contractor)
