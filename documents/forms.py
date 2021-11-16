@@ -1,8 +1,6 @@
-from crispy_forms.helper import FormHelper, Layout
-from crispy_forms.layout import Div, Row, Field
 from django import forms
 from documents.models import *
-import datetime
+from warehouse.models import Warehouse, Shelf
 
 
 class GoodsIssueForm(forms.ModelForm):
@@ -15,7 +13,7 @@ class GoodsReceivedForm(forms.ModelForm):
 
     class Meta:
         model = GoodsReceivedNote
-        fields = ['contractor']
+        fields = ['contractor', 'confirmed']
 
 
 class ProductDocumentReceivedForm(forms.ModelForm):

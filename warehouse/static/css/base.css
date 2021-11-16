@@ -48,15 +48,15 @@ body {
 }
 
 .grn-table .product-table-grn {
-    min-width: 200px;
+    min-width: 250px;
 }
 
 .grn-table .count-table-grn {
-    min-width: 100px;
+    min-width: 120px;
 }
 
 .grn-table .price-table-grn {
-    min-width: 180px;
+    min-width: 190px;
 }
 
 .grn-table .warehouse-table-grn {
@@ -75,5 +75,20 @@ body {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
+}
+
+.form-check input:checked {
+    background-color: #198754;
+}
+
+.form-check input {
+    width: 25px;
+    height: 25px;
+}
+
+.help-confirm {
+    text-indent: 0;
+    font-size: 14px;
+    text-align: justify;
 }
 

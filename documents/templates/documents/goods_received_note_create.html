@@ -9,7 +9,7 @@
 
     <h1>Nowe przyjęcie zewnętrzne</h1>
 
-    <div class="card bg-light text-black my-3">
+    <div class="card bg-light text-black my-3" style="position: relative; z-index: -1;">
         <div class="card-body">Numer dokumentu: {{ document_number }}</div>
     </div>
     <form method="post" action="" id="documentForm" data-url="{% url "documents:ajax_load_shelves" %}" location-url="{% url "documents:ajax_load_locations" %}">
@@ -32,10 +32,20 @@
                 </thead>
                 <tbody>
                     {% for product_form in formset.forms %}
-                        <tr>
-                            <td>{{ product_form.product|add_class:"form-control" }}</td>
+                        <tr id="formTemplate">
+                            <td>
+                                {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
+                                {{ product_form.product|add_class:"form-control" }}
+                            </td>
                             <td>{{ product_form.quantity|add_class:"form-control" }}</td>
-                            <td>{{ product_form.price|add_class:"form-control" }}</td>
+                            <td>
+                                <div class="input-group mb-3">
+                                  {{ product_form.price|add_class:"form-control" }}
+                                  <div class="input-group-append">
+                                    <span class="input-group-text" id="basic-addon2">zł</span>
+                                  </div>
+                                </div>
+                            </td>
                             <td>{{ product_form.warehouse|add_class:"form-control" }}</td>
                             <td>{{ product_form.shelf|add_class:"form-control" }}</td>
                             <td>{{ product_form.location|add_class:"form-control" }}</td>
@@ -46,7 +56,19 @@
             </table>
         </div>
         {{ formset.management_form }}
-        <input type="submit" class="btn btn-success mt-3" value="Zatwierdź dokument">
+
+        <div class="form-check my-2">
+            {{ form.confirmed|add_class:"form-check-input" }}
+            <label class="form-check-label mt-1 mx-2"> Zatwierdź dokument </label>
+        </div>
+        <div class="container">
+            <p class="text-muted container-fluid help-confirm">
+                Niezatwierdzony dokument będzie wprowadzony do systemu jako kopia robocza. Po zatwierdzeniu dokumentu nie będzie możliwości edycji.
+            </p>
+        </div>
+
+
+        <input type="submit" class="btn btn-success mt-3" value="Zapisz" id="confirm">
     </form>
 
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
@@ -55,20 +77,42 @@
     <!-- Skrypt do obsługi formset -->
     <script type="text/javascript">
         $(function (){
-            $('#documentForm tbody tr').formset();
+            $('#documentForm tbody tr').formset({
+                prefix: '{{ formset.prefix }}'
+            });
         });
+    </script>
+
+    <!-- Skrypt resetujący wybory w nowym formularzu-->
+    <script>
+        $(document).ready(function (){
+
+            $('#add_product_btn').click(function (){
+                let last_form_id = $('#id_products-TOTAL_FORMS').val() - 1;
+                const id_warehouse = "#id_products-" + last_form_id + "-warehouse";
+                const id_shelf = "#id_products-" + last_form_id + "-shelf";
+                const id_location = "#id_products-" + last_form_id + "-location";
+                const id_product = "#id_products-" + last_form_id + "-product";
+
+                $(id_location).prop('selectedIndex', 0);
+                $(id_warehouse).prop('selectedIndex', 0);
+                $(id_shelf).prop('selectedIndex', 0);
+                $(id_product).prop('selectedIndex', 0);
+
+            });
+        })
     </script>
 
     <!-- Skrypt do aktualizacji listy -->
     <script>
         document.body.addEventListener('change', function (event) {
-            const re_warehouse = new RegExp("^(id_form-[0-9]*-warehouse)$");
-            const re_shelf = new RegExp("^(id_form-[0-9]*-shelf)$");
+            const re_warehouse = new RegExp("^(id_products-[0-9]*-warehouse)$");
+            const re_shelf = new RegExp("^(id_products-[0-9]*-shelf)$");
             let id = (event.target.id).split('-')[1];
 
-            const id_warehouse = "#id_form-" + id + "-warehouse";
-            const id_shelf = "#id_form-" + id + "-shelf";
-            const id_location = "#id_form-" + id + "-location";
+            const id_warehouse = "#id_products-" + id + "-warehouse";
+            const id_shelf = "#id_products-" + id + "-shelf";
+            const id_location = "#id_products-" + id + "-location";
 
             if(re_warehouse.test(event.target.id)) {
                 var url = $("#documentForm").attr("data-url");

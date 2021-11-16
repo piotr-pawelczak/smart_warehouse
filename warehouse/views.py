@@ -1,11 +1,9 @@
 from django.shortcuts import render, redirect
-from django.views.generic import TemplateView
 from .models import Warehouse, Location, Shelf, Product
 from django.shortcuts import get_object_or_404
 from .forms import WarehouseForm, ShelfForm, ProductForm
 from django.contrib import messages
 from django.urls import reverse
-from django.views.decorators.cache import cache_control
 import copy
 
 

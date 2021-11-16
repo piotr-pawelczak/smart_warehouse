@@ -1,6 +1,6 @@
 from django.db import models
-from warehouse.models import *
 from polymorphic.models import PolymorphicModel
+from warehouse.models import Product, Location
 
 
 class Contractor(models.Model):
@@ -15,6 +15,10 @@ class Contractor(models.Model):
 class Document(PolymorphicModel):
     document_number = models.CharField(max_length=50, unique=True)
     created = models.DateTimeField(auto_now_add=True)
+    confirmed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.document_number
 
 
 class GoodsReceivedNote(Document):
@@ -36,5 +40,3 @@ class ProductDocument(models.Model):
     quantity = models.PositiveIntegerField()
     document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='products')
     price = models.DecimalField(max_digits=12, decimal_places=2)
-
-

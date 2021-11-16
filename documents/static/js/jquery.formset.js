@@ -184,7 +184,7 @@
             options.formTemplate = template;
 
             var addButtonHTML =
-                '<a class="' + options.addCssClass + ' btn btn-warning my-2" href="javascript:void(0)">Dodaj produkt</a>';
+                '<a class="' + options.addCssClass + ' btn btn-warning my-2" id="add_product_btn" href="javascript:void(0)">Dodaj produkt</a>';
 
             if (options.addContainerClass) {
                 // If we have a specific container for the "add" button,
