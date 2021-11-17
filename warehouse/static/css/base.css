@@ -102,3 +102,15 @@ body {
     height: 38px !important;
 }
 
+.document_link {
+    text-decoration: none;
+}
+
+.document_add_list li:hover {
+    background-color: #dddddd;
+}
+
+.document_add_list li a {
+    text-decoration: none;
+    color: black;
+}

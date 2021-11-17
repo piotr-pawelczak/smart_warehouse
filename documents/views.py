@@ -6,6 +6,7 @@ from django.urls import reverse
 from documents.forms import *
 from django.forms import inlineformset_factory
 from warehouse.models import ProductLocation, Warehouse, Shelf
+from django.views.generic import ListView, DetailView
 
 
 # Create your views here.
@@ -32,6 +33,8 @@ def goods_received_create(request):
 
     year = datetime.datetime.now().year
     counter = len(GoodsReceivedNote.objects.filter(created__year='2021')) + 1
+    if counter < 10:
+        counter = f'0{counter}'
     document_number = f'PZ/{year}/{counter}'
 
     lot_number = datetime.datetime.now().strftime("%d/%m/%Y")
@@ -77,7 +80,7 @@ def goods_received_create(request):
                 messages.success(request, f'Pomyślnie utworzono dokument {document_number}.')
             else:
                 messages.success(request, f'Pomyślnie utworzono wersję roboczą dokumentu.')
-            return redirect(reverse('documents:document_create'))
+            return redirect(reverse('documents:list'))
         else:
             messages.error(request, 'Poprawnie uzupełnij wszystkie pola. Jeżeli formularz dodawania produktu jest '
                                     'pusty, usuń go.')
@@ -118,6 +121,17 @@ def goods_received_notes_update(request):
     context = {'edit_form': edit_form, 'document_number': grn.document_number, 'formset': formset}
     return render(request, 'documents/goods_received_note_update.html', context)
 
+
+class DocumentListView(ListView):
+    template_name = 'documents/list.html'
+    queryset = Document.objects.all().order_by('-created')
+    context_object_name = 'documents'
+
+
+class DocumentDetailView(DetailView):
+    model = Document
+    context_object_name = 'document'
+    template_name = 'documents/detail.html'
 
 # ----------------------------------- Functions to handle AJAX form refresh --------------------------------------------
 

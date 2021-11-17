@@ -1,0 +1,69 @@
+{% extends "warehouse/base.html" %}
+{% load static %}
+{% block title %}Lista dokumentów{% endblock %}
+
+{% block content %}
+    <h1 class="mb-3">Dokumenty</h1>
+
+    <div class="card" style="width: 400px;">
+      <a class="btn btn-success" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+        Dodaj nowy dokument <i class="fas fa-truck ml-2"></i>
+      </a>
+      <ul class="list-group list-group-flush document_add_list collapse" id="collapseExample">
+          <li class="list-group-item">
+              <a href="{% url "documents:goods_received_create" %}" target="_blank" title="Nowe przyjęcie zewnętrzne" class="stretched-link">Przyjęcie zewnętrzne (PZ)</a>
+          </li>
+          <li class="list-group-item">
+              <a href="{% url "documents:goods_received_create" %}" target="_blank" title="Nowe przyjęcie zewnętrzne" class="stretched-link">Przyjęcie wewnętrzne (PW)</a>
+          </li>
+          <li class="list-group-item">
+              <a href="{% url "documents:goods_received_create" %}" target="_blank" title="Nowe przyjęcie zewnętrzne" class="stretched-link">Wydanie zewnętrzne (WZ)</a>
+          </li>
+          <li class="list-group-item">
+              <a href="{% url "documents:goods_received_create" %}" target="_blank" title="Nowe przyjęcie zewnętrzne" class="stretched-link">Rozchód wewnętrzny (RW)</a>
+          </li>
+          <li class="list-group-item">
+              <a href="{% url "documents:goods_received_create" %}" target="_blank" title="Nowe przyjęcie zewnętrzne" class="stretched-link">Przesunięcie międzymagazynowe (MM)</a>
+          </li>
+      </ul>
+    </div>
+
+
+
+    <h3 class="mt-4">Lista dokumentów</h3>
+    <div class="table-responsive mt-2 mb-4">
+    <table id="example" class="table table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>Numer dokumentu</th>
+                <th>Data utworzenia</th>
+                <th>Kontrahent</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for document in documents %}
+                <tr>
+                    <td><a href="{{ document.get_absolute_url }}" class="document_link" target="_blank">{{ document.document_number }}</a></td>
+                    <td>{{ document.created }}</td>
+                    <td>{{ document.contractor }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#example').DataTable({
+                sort: false
+            });
+        } );
+
+
+    </script>
+
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "warehouse/base.html" %}
+{% block title %}Dokument {{ document.document_number }}{% endblock %}
+
+{% block content %}
+    <h1>{{ document.document_number }}</h1>
+    {% for product_document in document.products.all %}
+        {{ product_document.product.name }}
+    {% endfor %}
+{% endblock %}

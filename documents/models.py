@@ -1,7 +1,7 @@
 from django.db import models
 from polymorphic.models import PolymorphicModel
 from warehouse.models import Product, Location
-
+from django.urls import reverse
 
 class Contractor(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -19,6 +19,9 @@ class Document(PolymorphicModel):
 
     def __str__(self):
         return self.document_number
+
+    def get_absolute_url(self):
+        return reverse('documents:detail', args=[self.id])
 
 
 class GoodsReceivedNote(Document):
