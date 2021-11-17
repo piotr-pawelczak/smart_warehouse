@@ -114,3 +114,13 @@ body {
     text-decoration: none;
     color: black;
 }
+
+.dataTables_length label {
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+.dataTables_filter label {
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
