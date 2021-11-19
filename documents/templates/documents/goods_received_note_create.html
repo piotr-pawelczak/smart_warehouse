@@ -17,6 +17,9 @@
         <label>Kontrahent</label>
         {{ form.contractor|add_class:"form-control" }}
 
+        <label>Magazyn</label>
+        {{ form.warehouse|add_class:"form-control" }}
+
         <div class="table-responsive">
             <table class="table mt-3 grn-table">
                 <thead>
@@ -24,17 +27,16 @@
                         <th class="product-table-grn">Produkt</th>
                         <th class="count-table-grn">Ilość</th>
                         <th class="price-table-grn">Cena jednostkowa</th>
-                        <th class="warehouse-table-grn">Magazyn</th>
                         <th class="shelf-table-grn">Regał</th>
                         <th class="location-table-grn">Lokalizacja</th>
                         <th></th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="form_set">
                     {% for product_form in formset.forms %}
                         <tr id="formTemplate">
                             <td>
-                                {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
+                                {% if product_form.instance.pk %}{{ product_form.DELETE }}{% endif %}
                                 {{ product_form.product|add_class:"product_search form-control"}}
                             </td>
                             <td>{{ product_form.quantity|add_class:"form-control" }}</td>
@@ -46,11 +48,9 @@
                                   </div>
                                 </div>
                             </td>
-                            <td>{{ product_form.warehouse|add_class:"form-control" }}</td>
-                            <td>{{ product_form.shelf|add_class:"form-control" }}</td>
-                            <td>{{ product_form.location|add_class:"form-control" }}</td>
+                            <td>{{ product_form.shelf|add_class:"form-control shelf-select" }}</td>
+                            <td>{{ product_form.location|add_class:"form-control location-select" }}</td>
                             <td></td>
-                        </tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -71,6 +71,7 @@
         <input type="submit" class="btn btn-success mt-3" value="Zapisz" id="confirm">
     </form>
 
+
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="{% static 'js/jquery.formset.js' %}"></script>
 
@@ -83,92 +84,34 @@
         });
     </script>
 
-    <!-- Skrypt resetujący wybory w nowym formularzu-->
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
     <script>
         $(document).ready(function (){
+            $('#documentForm').submit(function (){
+                let inputs = $("#documentForm .form-control");
 
-            $('#add_product_btn').click(function (){
-                let last_form_id = $('#id_products-TOTAL_FORMS').val() - 1;
-                const id_warehouse = "#id_products-" + last_form_id + "-warehouse";
-                const id_shelf = "#id_products-" + last_form_id + "-shelf";
-                const id_location = "#id_products-" + last_form_id + "-location";
-                const id_product = "#id_products-" + last_form_id + "-product";
-
-                $(id_location).prop('selectedIndex', 0);
-                $(id_warehouse).prop('selectedIndex', 0);
-                $(id_shelf).prop('selectedIndex', 0);
-                $(id_product).prop('selectedIndex', 0);
-
-                $(document).ready(function (){
-                    $(".product_search").select2({placeholder: 'Wybierz produkt'});
-                });
-
+                for(let i=0; i<inputs.length; i++) {
+                    if ($(inputs[i]).val() === '') {
+                        swal({
+                            title: 'Uzupełnij puste pola.',
+                            text: 'Jeżeli nie potrzebujesz formularza danego produktu, usuń go.',
+                            icon: 'error'
+                        });
+                        return false;
+                    }
+                }
             });
-        })
-    </script>
-
-    <!-- Skrypt do aktualizacji listy -->
-    <script>
-        document.body.addEventListener('change', function (event) {
-            const re_warehouse = new RegExp("^(id_products-[0-9]*-warehouse)$");
-            const re_shelf = new RegExp("^(id_products-[0-9]*-shelf)$");
-            let id = (event.target.id).split('-')[1];
-
-            const id_warehouse = "#id_products-" + id + "-warehouse";
-            const id_shelf = "#id_products-" + id + "-shelf";
-            const id_location = "#id_products-" + id + "-location";
-
-            if(re_warehouse.test(event.target.id)) {
-                var url = $("#documentForm").attr("data-url");
-                var warehouseId = $(id_warehouse).val();
-
-                $(id_location).prop('selectedIndex', 0);
-                $(id_location).html('<option value="">---------</option>')
-
-                $.ajax({
-                    url: url,
-                    data: {
-                        'warehouse': warehouseId
-                    },
-                    success: function (data) {
-                        $(id_shelf).html(data)
-                    }
-                });
-
-                if(warehouseId === ''){
-                    $(id_shelf).prop('selectedIndex', 0);
-                    $(id_shelf).html('<option value="">---------</option>')
-                }
-            }
-
-            if(re_shelf.test(event.target.id)) {
-                url = $("#documentForm").attr("location-url");
-                var shelfId = $(id_shelf).val();
-
-                $.ajax({
-                    url: url,
-                    data: {
-                        'shelf': shelfId
-                    },
-                    success: function (data) {
-                        $(id_location).html(data)
-                    }
-                });
-
-                if(shelfId === ''){
-                    $(id_location).prop('selectedIndex', 0);
-                }
-            }
-
         });
     </script>
 
-
-{#    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>#}
+    <script src="{% static 'js/reset_new_form_choices.js' %}"></script>
+    <script src="{% static 'js/update_choices.js' %}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.12/js/select2.min.js" integrity="sha512-5+FrEmSijjxRArJWeLcCIEgoQYAgU0gSa9MgNMN+tVSS+MPZsEk9a7OkPZr7AzjNJng1Kl+tXOQVtJcsU+Ax0w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
     <script>
         $(document).ready(function (){
             $(".product_search").select2({placeholder: 'Wybierz produkt'});
         });
     </script>
+
 {% endblock %}

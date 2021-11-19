@@ -94,17 +94,15 @@ def goods_received_create(request):
 
 def goods_received_notes_update(request):
     ProductFormSet = inlineformset_factory(Document, ProductDocument, form=ProductDocumentReceivedForm, extra=0, can_delete=True)
-    grn = GoodsReceivedNote.objects.get(id=97)
+    grn = GoodsReceivedNote.objects.get(id=121)
 
     shelves = [x.location.parent_shelf for x in grn.products.all()]
-    warehouses = [x.warehouse for x in shelves]
 
     edit_form = GoodsReceivedForm(instance=grn)
     formset = ProductFormSet(instance=grn)
 
     for i in range(len(formset.forms)):
         formset.forms[i].fields['shelf'].initial = shelves[i]
-        formset.forms[i].fields['warehouse'].initial = warehouses[i]
 
     if request.method == 'POST':
         formset = ProductFormSet(request.POST, instance=grn)
@@ -113,9 +111,15 @@ def goods_received_notes_update(request):
             updated_document = edit_form.save()
 
             for form in formset.forms:
-                updated_product = form.save(commit=False)
-                updated_product.document = updated_document
-                updated_product.save()
+                if form.cleaned_data['DELETE']:
+                    product_document_id = form.cleaned_data['id'].id
+                    obj = ProductDocument.objects.get(id=product_document_id)
+                    obj.delete()
+                else:
+                    updated_product = form.save(commit=False)
+                    updated_product.document = updated_document
+                    updated_product.save()
+
             return redirect('warehouse:home')
 
     context = {'edit_form': edit_form, 'document_number': grn.document_number, 'formset': formset}
@@ -134,6 +138,7 @@ class DocumentDetailView(DetailView):
     template_name = 'documents/detail.html'
 
 # ----------------------------------- Functions to handle AJAX form refresh --------------------------------------------
+
 
 def load_product_locations(request):
     product_id = request.GET.get('product')

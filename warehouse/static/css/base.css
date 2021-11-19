@@ -48,7 +48,7 @@ body {
 }
 
 .grn-table .product-table-grn {
-    min-width: 250px;
+    width: 350px;
 }
 
 .grn-table .count-table-grn {
@@ -93,6 +93,7 @@ body {
 }
 .select2-selection__rendered {
     line-height: 38px !important;
+    width: 350px;
 }
 .select2-container .select2-selection--single {
     height: 38px !important;

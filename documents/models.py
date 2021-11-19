@@ -1,7 +1,8 @@
 from django.db import models
 from polymorphic.models import PolymorphicModel
-from warehouse.models import Product, Location
+from warehouse.models import Product, Location, Warehouse
 from django.urls import reverse
+
 
 class Contractor(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -16,6 +17,7 @@ class Document(PolymorphicModel):
     document_number = models.CharField(max_length=50, unique=True)
     created = models.DateTimeField(auto_now_add=True)
     confirmed = models.BooleanField(default=False)
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.document_number
@@ -34,7 +36,7 @@ class GoodsIssueNote(Document):
 
 
 class InternalGoodsIssueNote(Document):
-    warehouse = models.CharField(max_length=60)
+    pass
 
 
 class ProductDocument(models.Model):

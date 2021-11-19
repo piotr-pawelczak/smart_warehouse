@@ -118,7 +118,7 @@ class Product(models.Model):
         return quantity
 
     def __str__(self):
-        return self.name
+        return f'{self.name} [{self.sku}]'
 
     def get_absolute_url(self):
         return reverse('warehouse:product_detail', args=[self.pk, self.slug])

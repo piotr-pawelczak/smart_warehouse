@@ -13,12 +13,11 @@ class GoodsReceivedForm(forms.ModelForm):
 
     class Meta:
         model = GoodsReceivedNote
-        fields = ['contractor', 'confirmed']
+        fields = ['contractor', 'confirmed', 'warehouse']
 
 
 class ProductDocumentReceivedForm(forms.ModelForm):
 
-    warehouse = forms.ModelChoiceField(queryset=Warehouse.objects.all())
     shelf = forms.ModelChoiceField(queryset=Shelf.objects.all())
 
     class Meta:
@@ -30,6 +29,7 @@ class ProductDocumentReceivedForm(forms.ModelForm):
 
         self.fields['shelf'].queryset = Shelf.objects.none()
         self.fields['location'].queryset = Location.objects.none()
+        self.empty_permitted = False
 
         if 'warehouse' in self.data:
             try:
@@ -49,8 +49,10 @@ class ProductDocumentReceivedForm(forms.ModelForm):
             except (ValueError, TypeError):
                 pass
         elif self.instance.id:
+            print('Instance')
             self.fields['location'].queryset = self.instance.location.parent_shelf.locations.all()
-        elif self.is_bound:
+
+        if self.is_bound:
             self.fields['location'].queryset = Location.objects.all()
 
 
