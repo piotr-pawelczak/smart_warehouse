@@ -1,0 +1,72 @@
+{% extends "warehouse/base.html" %}
+{% load crispy_forms_filters %}
+{% load static %}
+
+{% block title %} Kontrahenci {% endblock %}
+
+{% block content %}
+
+    <h3 class="mt-4">Lista kontrahentów</h3>
+
+    <div class="card col-sm-4" style="z-index: 0;">
+      <a class="btn btn-success" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+          <span>Dodaj nowego kontrahenta</span>
+      </a>
+      <div class="list-group list-group-flush document_add_list collapse" id="collapseExample">
+            <h3 class="mt-2 px-2">Nowy kontrahent</h3>
+            <form method="post" class="form-group border border-secondary rounded p-4 mx-auto" style="width: 90%">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <input type="submit" class="btn btn-success mt-2" value="Dodaj">
+            </form>
+      </div>
+    </div>
+
+    <div class="table-responsive mt-2 mb-4">
+    <table id="example" class="table table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>Nazwa</th>
+                <th>Adres</th>
+                <th>Telefon</th>
+                <th>E-Mail</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for contractor in contractors %}
+                <tr>
+                    <td>{{ contractor.name }}</td>
+                    <td>{{ contractor.address }}</td>
+                    <td>{{ contractor.phone_number }}</td>
+                    <td>{{ contractor.email }}</td>
+                    <td>
+                        <a class="btn btn-warning" title="Usuń" href="{% url "documents:contractor-update" contractor.id %}"><i class="fas fa-edit"></i></a>
+                    </td>
+                    <td>
+                        <form method="post" action="{% url "documents:contractor-delete" contractor.id %}" class="m-0 p-0">
+                            <button class="btn btn-danger delete-contractor-btn" title="Usuń" type="submit" onclick="return confirm('Czy na pewno chcesz usunąć kontrahenta?');"><i class="fas fa-trash"></i></button>
+                            {% csrf_token %}
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#example').DataTable({
+                sort: false
+            });
+        });
+
+
+    </script>
+{% endblock content %}

@@ -25,44 +25,60 @@
             <th>Adres e-mail</th>
             <td>{{ user.email }}</td>
         </tr>
+        <tr>
+            <th>Rola</th>
+            {% if user|has_group:"admin" %}
+                <td>Administrator</td>
+            {% else %}
+                <td>Pracownik</td>
+            {% endif %}
+        </tr>
     </table>
 
     {% if user.id == request.user.id %}
         <a href="{% url "account:password_change" %}" class="btn btn-warning">Zmień hasło</a>
 
-         <!-- Edycja magazynu -->
-                <div>
-                    <!-- Przycisk edycji magazynu -->
-                    <button type="button" class="btn btn-warning mt-3 input-block-level" data-bs-toggle="modal" data-bs-target="#editModal">
-                        Edytuj profil
-                    </button>
+         <!-- Edycja użytkownika -->
+         <div>
+             <!-- Przycisk edycji użytkownika -->
+             <button type="button" class="btn btn-warning mt-3 input-block-level" data-bs-toggle="modal" data-bs-target="#editModal">
+                 Edytuj profil
+             </button>
 
-                    <!-- Modal edycji magazynu -->
-                    <div class="modal fade edit-modal" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-                      <div class="modal-dialog">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h5 class="modal-title" id="editModalLabel">Edytuj magazyn</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                          </div>
-                          <div class="modal-body">
-                              <form action="" method="post" class="crispy-form-margin">
-                                  {% csrf_token %}
-                                  {{ edit_form.username|as_crispy_field }}
-                                  {{ edit_form.first_name|as_crispy_field }}
-                                  {{ edit_form.last_name|as_crispy_field }}
-                                  {{ edit_form.email|as_crispy_field }}
-                                  <div class="mt-2 mx-auto row">
-                                      <input type="submit" value="Edytuj" class="btn btn-success mx-auto col-5" name="edit_warehouse_button">
-                                      <button type="button" class="btn btn-danger mx-auto col-5 offset-2" data-bs-dismiss="modal">Anuluj</button>
-                                  </div>
+             <!-- Modal edycji użytkownika -->
+             <div class="modal fade edit-modal" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+               <div class="modal-dialog">
+                 <div class="modal-content">
+                   <div class="modal-header">
+                     <h5 class="modal-title" id="editModalLabel">Edytuj magazyn</h5>
+                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                   </div>
+                   <div class="modal-body">
+                       <form action="" method="post" class="crispy-form-margin">
+                           {% csrf_token %}
+                           {{ edit_form.username|as_crispy_field }}
+                           {{ edit_form.first_name|as_crispy_field }}
+                           {{ edit_form.last_name|as_crispy_field }}
+                           {{ edit_form.email|as_crispy_field }}
+                           <div class="mt-2 mx-auto row">
+                               <input type="submit" value="Edytuj" class="btn btn-success mx-auto col-5">
+                               <button type="button" class="btn btn-danger mx-auto col-5 offset-2" data-bs-dismiss="modal">Anuluj</button>
+                           </div>
 
-                              </form>
-                          </div>
+                       </form>
+                   </div>
 
-                        </div>
-                      </div>
-                    </div>
-                </div>
+                 </div>
+               </div>
+             </div>
+         </div>
+
+        {% if request.user|has_group:"admin" %}
+            <h3 class="mt-5">Panel administratora</h3>
+            <a href="{% url "account:register" %}" class="btn btn-success mt-2">Dodaj nowego użytkownika</a>
+        {% endif %}
+
     {% endif %}
+
+
 {% endblock %}

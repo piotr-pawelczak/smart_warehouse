@@ -3,12 +3,16 @@ from django.db import models
 from polymorphic.models import PolymorphicModel
 from warehouse.models import Product, Location, Warehouse
 from django.urls import reverse
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 class Contractor(models.Model):
     name = models.CharField(max_length=100, unique=True)
     address = models.CharField(max_length=100)
-    phone_number = models.CharField(max_length=10)
+    phone_number = PhoneNumberField(null=False, blank=False)
+    email = models.EmailField(max_length=50)
+
+    phone_number.error_messages['invalid'] = 'Podaj poprawny numer telefonu. Użyj kodu krajowego np (+48)'
 
     def __str__(self):
         return self.name
@@ -29,12 +33,12 @@ class Document(PolymorphicModel):
 
 
 class GoodsReceivedNote(Document):
-    contractor = models.ForeignKey(Contractor, on_delete=models.CASCADE)
+    contractor = models.ForeignKey(Contractor, on_delete=models.SET_NULL, null=True)
     document_type = models.CharField(default='GRN', max_length=3)
 
 
 class GoodsIssueNote(Document):
-    contractor = models.ForeignKey(Contractor, on_delete=models.CASCADE)
+    contractor = models.ForeignKey(Contractor, on_delete=models.SET_NULL, null=True)
 
 
 class InternalGoodsIssueNote(Document):

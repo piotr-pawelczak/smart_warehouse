@@ -3,7 +3,7 @@ import datetime
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 
@@ -97,7 +97,7 @@ def goods_received_create(request):
         formset = ProductFormSet()
 
     context = {'formset': formset, 'form': form, 'document_number': document_number}
-    return render(request, 'documents/goods_received_note_create.html', context)
+    return render(request, 'documents/warehouse_documents/goods_received_note_create.html', context)
 
 
 @login_required
@@ -132,7 +132,7 @@ def goods_received_notes_update(request):
             return redirect('warehouse:home')
 
     context = {'edit_form': edit_form, 'document_number': grn.document_number, 'formset': formset}
-    return render(request, 'documents/goods_received_note_update.html', context)
+    return render(request, 'documents/warehouse_documents/goods_received_note_update.html', context)
 
 
 class DocumentListView(LoginRequiredMixin, ListView):
@@ -165,3 +165,49 @@ def load_locations(request):
     shelf_id = request.GET.get('shelf')
     locations = Shelf.objects.get(id=shelf_id).locations.all()
     return render(request, 'documents/ajax_dropdown/locations_dropdown_list_options.html', {'locations': locations})
+
+
+@login_required
+def contractors_list(request):
+    contractors = Contractor.objects.all()
+
+    if request.method == 'POST':
+        form = ContractorForm(request.POST)
+        if form.is_valid():
+            form.save()
+        else:
+            messages.error(request, 'Wystąpił problem podczas dodawania kontrahenta.')
+    else:
+        form = ContractorForm()
+
+    context = {'contractors': contractors, 'form': form}
+    return render(request, 'documents/contractors.html', context)
+
+
+@login_required
+def contractor_delete(request, pk):
+    """
+    Widok odpowiedzialny za usuwanie magazynu. Zostaje przekierowany do listy magazynów
+    """
+    contractor = get_object_or_404(Contractor, id=pk)
+    if request.method == 'POST':
+        contractor.delete()
+        messages.warning(request, 'Kontrahent został usunięty')
+    return redirect(reverse('documents:contractors'))
+
+
+@login_required
+def contractor_update(request, pk):
+    contractor = get_object_or_404(Contractor, id=pk)
+
+    if request.method == 'POST':
+        edit_form = ContractorForm(request.POST, instance=contractor)
+        if edit_form.is_valid():
+            edit_form.save()
+            return redirect(reverse('documents:contractors'))
+    else:
+        edit_form = ContractorForm(instance=contractor)
+
+    context = {'edit_form': edit_form}
+    return render(request, 'documents/update_contractor.html', context)
+

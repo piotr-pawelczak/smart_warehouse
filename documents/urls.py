@@ -12,4 +12,7 @@ urlpatterns = [
     path('ajax/load-shelves/', views.load_shelves, name='ajax_load_shelves'),
     path('ajax/load-locations/', views.load_locations, name='ajax_load_locations'),
     path('pz/update', views.goods_received_notes_update, name='goods_received_update'),
+    path('contractors', views.contractors_list, name='contractors'),
+    path('contractor/<int:pk>/delete', views.contractor_delete, name='contractor-delete'),
+    path('contractor/<int:pk>/update', views.contractor_update, name='contractor-update'),
 ]

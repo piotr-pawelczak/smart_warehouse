@@ -26,6 +26,12 @@ class UserRegisterForm(forms.ModelForm):
             'email': forms.TextInput(attrs={'required': 'True'}),
         }
 
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError('Istnieje już użytkownik o podanym adresie e-mail')
+        return self.cleaned_data['email']
+
 
 class UserUpdateForm(forms.ModelForm):
     class Meta:

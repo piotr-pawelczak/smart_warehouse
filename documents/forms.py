@@ -79,3 +79,12 @@ class ProductDocumentForm(forms.ModelForm):
             self.fields['location'].queryset = Location.objects.all()
 
 
+class ContractorForm(forms.ModelForm):
+    class Meta:
+        model = Contractor
+        exclude = ()
+
+        labels = {'name': 'Nazwa', 'address': 'Adres', 'phone_number': 'Numer telefonu'}
+
+
+
