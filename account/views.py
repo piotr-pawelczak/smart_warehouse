@@ -1,11 +1,11 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from django.urls import reverse
-from django.contrib.auth.models import Group
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse, reverse_lazy
+from django.contrib.auth.models import Group, User
 import random
 import string
-
-from .forms import UserRegisterForm
+from .forms import UserRegisterForm, UserUpdateForm
 
 # Create your views here.
 
@@ -42,6 +42,19 @@ def register(request):
     return render(request, 'account/register.html', context)
 
 
-def profile(request):
-    context = {}
+def user_detail(request, pk):
+    user = get_object_or_404(User, id=pk)
+
+    edit_form = UserUpdateForm(instance=user)
+    if request.method == 'POST':
+        edit_form = UserUpdateForm(request.POST, instance=user)
+        if edit_form.is_valid():
+            edit_form.save()
+            return redirect(reverse_lazy('account:profile', args=[user.id]))
+
+    context = {'user': user, 'edit_form': edit_form}
     return render(request, 'account/profile.html', context)
+
+
+
+

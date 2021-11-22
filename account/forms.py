@@ -25,3 +25,15 @@ class UserRegisterForm(forms.ModelForm):
             'last_name': forms.TextInput(attrs={'required': 'True'}),
             'email': forms.TextInput(attrs={'required': 'True'}),
         }
+
+
+class UserUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email')
+
+        widgets = {
+            'first_name': forms.TextInput(attrs={'required': 'True'}),
+            'last_name': forms.TextInput(attrs={'required': 'True'}),
+            'email': forms.TextInput(attrs={'required': 'True'}),
+        }

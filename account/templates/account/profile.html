@@ -1,7 +1,68 @@
 {% extends "warehouse/base.html" %}
+{% load widget_tweaks %}
+{% load tags %}
+{% load crispy_forms_filters %}
 
-{% block title %}Profil użytkownika {{ request.user.username }}{% endblock %}
+{% block title %}Profil użytkownika {{ user.username }}{% endblock %}
 
 {% block content %}
-    <h1>Profil użytkownika {{ request.user.username }}</h1>
+    <h1>Profil użytkownika {{ user.username }}</h1>
+
+    <table class="table table-bordered warehouse_list_table mt-3" style="max-width: 500px">
+        <tr>
+            <th>Nazwa użytkownika</th>
+            <td>{{ user.username }}</td>
+        </tr>
+        <tr>
+            <th>Imię</th>
+            <td>{{ user.first_name }}</td>
+        </tr>
+        <tr>
+            <th>Nazwisko</th>
+            <td>{{ user.last_name }}</td>
+        </tr>
+        <tr>
+            <th>Adres e-mail</th>
+            <td>{{ user.email }}</td>
+        </tr>
+    </table>
+
+    {% if user.id == request.user.id %}
+        <a href="{% url "account:password_change" %}" class="btn btn-warning">Zmień hasło</a>
+
+         <!-- Edycja magazynu -->
+                <div>
+                    <!-- Przycisk edycji magazynu -->
+                    <button type="button" class="btn btn-warning mt-3 input-block-level" data-bs-toggle="modal" data-bs-target="#editModal">
+                        Edytuj profil
+                    </button>
+
+                    <!-- Modal edycji magazynu -->
+                    <div class="modal fade edit-modal" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="editModalLabel">Edytuj magazyn</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                              <form action="" method="post" class="crispy-form-margin">
+                                  {% csrf_token %}
+                                  {{ edit_form.username|as_crispy_field }}
+                                  {{ edit_form.first_name|as_crispy_field }}
+                                  {{ edit_form.last_name|as_crispy_field }}
+                                  {{ edit_form.email|as_crispy_field }}
+                                  <div class="mt-2 mx-auto row">
+                                      <input type="submit" value="Edytuj" class="btn btn-success mx-auto col-5" name="edit_warehouse_button">
+                                      <button type="button" class="btn btn-danger mx-auto col-5 offset-2" data-bs-dismiss="modal">Anuluj</button>
+                                  </div>
+
+                              </form>
+                          </div>
+
+                        </div>
+                      </div>
+                    </div>
+                </div>
+    {% endif %}
 {% endblock %}
