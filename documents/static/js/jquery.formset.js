@@ -58,7 +58,7 @@
 
                 // var delButtonHTML =
                 //     '<a class="' + options.deleteCssClass + ' btn btn-danger" href="javascript:void(0)">X</a>';
-                 var delButtonHTML = '<a class="' + options.deleteCssClass + '" href="javascript:void(0)">' + options.deleteText +'</a>';
+                 var delButtonHTML = '<a class="' + options.deleteCssClass + ' btn btn-danger" href="javascript:void(0)">X</a>';
                 if (options.deleteContainerClass) {
                     // If we have a specific container for the remove button,
                     // place it as the last child of that container:

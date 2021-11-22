@@ -1,0 +1,16 @@
+{% extends "warehouse/base.html" %}
+{% load widget_tweaks %}
+{% load crispy_forms_filters %}
+
+{% block title %}Pomyślnie dodano użytkownika{% endblock %}
+
+{% block content %}
+    <h1>Nowy użytkownik</h1>
+
+    <p>Imię: {{ new_user.first_name }}</p>
+    <p>Nazwisko: {{ new_user.last_name }}</p>
+    <p>Nazwa użytkownika: {{ new_user.username }}</p>
+    <p>E-mail: {{ new_user.email }}</p>
+    <p>Hasło tymczasowe: {{ password }}</p>
+
+{% endblock %}
