@@ -2,6 +2,7 @@
 
 {% load crispy_forms_tags %}
 {% load crispy_forms_filters %}
+{% load tags %}
 
 {% block title %}Magazyny{% endblock %}
 
@@ -34,7 +35,7 @@
         </div>
     {% endif %}
 
-
+    {% if request.user|has_group:"administrator" %}
     <div class="col-lg-6 add_warehouse">
         <h3 class="mt-5">Dodaj magazyn</h3>
         <form action="." method="post" class="form-group border border-secondary rounded p-4 mx-auto my-3">
@@ -43,5 +44,6 @@
             <button type="submit" class="btn btn-success mt-3">Dodaj magazyn</button>
         </form>
     </div>
+    {% endif %}
 
 {% endblock %}

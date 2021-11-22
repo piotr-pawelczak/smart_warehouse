@@ -6,5 +6,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('warehouse.urls')),
     path('document/', include('documents.urls')),
+    path('account/', include('account.urls')),
     path('ajax_select', include(ajax_select_urls)),
 ]

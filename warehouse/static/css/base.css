@@ -126,3 +126,12 @@ body {
     margin-bottom: 10px;
     margin-top: 10px;
 }
+
+.user-link:hover {
+    background-color: #198754;
+    transition: .5s;
+}
+
+.register-form div {
+    margin-top: 5px;
+}

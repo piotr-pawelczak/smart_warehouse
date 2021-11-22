@@ -1,8 +1,12 @@
 import datetime
 
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django.utils.decorators import method_decorator
+
 from documents.forms import *
 from django.forms import inlineformset_factory
 from warehouse.models import ProductLocation, Warehouse, Shelf
@@ -28,6 +32,7 @@ def goods_issue_create(request):
 
 # ------------------------------------------ Goods Received Note Views -------------------------------------------------
 
+@login_required
 def goods_received_create(request):
     ProductFormSet = inlineformset_factory(Document, ProductDocument, form=ProductDocumentReceivedForm, extra=1, can_delete=True)
 
@@ -76,6 +81,9 @@ def goods_received_create(request):
                             quantity=new_product.quantity
                         )
 
+                    new_document.user = request.user
+                    new_document.save()
+
             if new_document.confirmed:
                 messages.success(request, f'Pomyślnie utworzono dokument {document_number}.')
             else:
@@ -92,6 +100,7 @@ def goods_received_create(request):
     return render(request, 'documents/goods_received_note_create.html', context)
 
 
+@login_required
 def goods_received_notes_update(request):
     ProductFormSet = inlineformset_factory(Document, ProductDocument, form=ProductDocumentReceivedForm, extra=0, can_delete=True)
     grn = GoodsReceivedNote.objects.get(id=121)
@@ -126,13 +135,13 @@ def goods_received_notes_update(request):
     return render(request, 'documents/goods_received_note_update.html', context)
 
 
-class DocumentListView(ListView):
+class DocumentListView(LoginRequiredMixin, ListView):
     template_name = 'documents/list.html'
-    queryset = Document.objects.all().order_by('-created')
+    queryset = Document.objects.filter(confirmed=True).order_by('-created')
     context_object_name = 'documents'
 
 
-class DocumentDetailView(DetailView):
+class DocumentDetailView(LoginRequiredMixin, DetailView):
     model = Document
     context_object_name = 'document'
     template_name = 'documents/detail.html'

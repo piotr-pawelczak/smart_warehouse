@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from .models import Warehouse, Location, Shelf, Product
 from django.shortcuts import get_object_or_404
@@ -11,6 +12,7 @@ def home_view(request):
     return render(request, 'warehouse/base.html')
 
 
+@login_required
 def warehouse_list(request):
     """
     Widok do obsługi listy wszystkich magazynów
@@ -31,6 +33,7 @@ def warehouse_list(request):
     return render(request, 'warehouse/locations/warehouse_list.html', {'warehouses': warehouses, 'form': form})
 
 
+@login_required
 def warehouse_detail(request, slug):
     """
     Widok do obsługi pojedynczego magazynu
@@ -91,6 +94,7 @@ def warehouse_detail(request, slug):
     return render(request, 'warehouse/locations/warehouse_detail.html', context)
 
 
+@login_required
 def warehouse_delete(request, slug):
     """
     Widok odpowiedzialny za usuwanie magazynu. Zostaje przekierowany do listy magazynów
@@ -102,6 +106,7 @@ def warehouse_delete(request, slug):
     return redirect(reverse('warehouse:warehouses_list'))
 
 
+@login_required
 def shelf_detail(request, pk):
     shelf = get_object_or_404(Shelf, id=pk)
     locations = shelf.locations.all()
@@ -157,6 +162,7 @@ def shelf_detail(request, pk):
     return render(request, 'warehouse/locations/shelf_detail.html', context)
 
 
+@login_required
 def shelf_delete(request, pk):
     shelf = get_object_or_404(Shelf, id=pk)
 
@@ -166,18 +172,21 @@ def shelf_delete(request, pk):
     return redirect(finish_url)
 
 
+@login_required
 def location_detail(request, pk):
     location = get_object_or_404(Location, id=pk)
     context = {'location': location}
     return render(request, 'warehouse/locations/location_detail.html', context)
 
 
+@login_required
 def product_list(request):
     products = Product.objects.all()
     context = {'products': products}
     return render(request, 'warehouse/products/product_list.html', context)
 
 
+@login_required
 def product_create(request):
 
     if request.method == 'POST':
@@ -193,12 +202,14 @@ def product_create(request):
     return render(request, 'warehouse/products/product_create.html', context)
 
 
+@login_required
 def product_detail(request, pk, slug):
     product = get_object_or_404(Product, id=pk)
     context = {'product': product}
     return render(request, 'warehouse/products/product_detail.html', context)
 
 
+@login_required
 def product_delete(request, pk):
     product = get_object_or_404(Product, id=pk)
     if request.method == 'POST':

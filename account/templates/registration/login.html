@@ -1,0 +1,28 @@
+{% extends "warehouse/base.html" %}
+{% load widget_tweaks %}
+{% load crispy_forms_filters %}
+
+{% block title %}Logowanie{% endblock %}
+
+{% block content %}
+    <h1>Logowanie</h1>
+    {% if form.errors %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            Nieprawidłowa nazwa użytkownika lub hasło
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+        <p class="mt-4">Aby zalogować się do serwisu, podaj nazwę użytkownika i hasło.</p>
+        <form action="{% url 'account:login' %}" method="post" class="form-group border border-secondary rounded p-4 mx-auto" style="max-width: 600px">
+            {% csrf_token %}
+
+            <label class="mt-2">Nazwa użytkownika</label>
+            {{ form.username|add_class:"form-control" }}
+
+            <label class="mt-2">Hasło</label>
+            {{ form.password|add_class:"form-control" }}
+
+            <input type="hidden" name="next" value="{{ next }}" />
+            <input type="submit" value="Zaloguj" class="btn btn-success mt-2">
+        </form>
+{% endblock %}

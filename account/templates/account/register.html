@@ -1,0 +1,22 @@
+{% extends "warehouse/base.html" %}
+{% load widget_tweaks %}
+{% load crispy_forms_filters %}
+
+{% block title %}Dodaj użytkownika{% endblock %}
+
+{% block content %}
+    <h1>Nowy użytkownik</h1>
+
+    <form action="" method="post" class="register-form form-group border border-secondary rounded p-4 mx-auto" style="max-width: 600px">
+        {% csrf_token %}
+        {{ user_form.username|as_crispy_field }}
+        {{ user_form.first_name|as_crispy_field }}
+        {{ user_form.last_name|as_crispy_field }}
+        {{ user_form.email|as_crispy_field }}
+        {{ user_form.password|as_crispy_field }}
+        {{ user_form.password2|as_crispy_field }}
+        {{ user_form.group|as_crispy_field }}
+        <input type="submit" value="Dodaj użytkownika" class="btn btn-success mt-2">
+    </form>
+
+{% endblock %}

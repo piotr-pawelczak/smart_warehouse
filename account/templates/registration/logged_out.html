@@ -1,0 +1,9 @@
+{% extends "warehouse/base.html" %}
+
+{% block title %}Wylogowanie{% endblock %}
+
+{% block content %}
+    <h1>Wylogowanie</h1>
+    <p>Zostałeś pomyślnie wylogowany.</p>
+    <a href="{% url "account:login" %}" style="text-decoration:none;">Zaloguj się ponownie</a>
+{% endblock %}

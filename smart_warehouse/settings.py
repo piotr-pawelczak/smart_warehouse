@@ -34,6 +34,7 @@ ALLOWED_HOSTS = ['smart-warehouse-web.herokuapp.com']
 # Application definition
 
 INSTALLED_APPS = [
+    'account.apps.AccountConfig',
     'documents.apps.DocumentsConfig',
     'warehouse.apps.WarehouseConfig',
     'django.contrib.admin',
@@ -74,6 +75,11 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+
+
+            'libraries': {
+                'tags': 'account.templatetags.tags'
+            }
         },
     },
 ]
@@ -114,9 +120,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'pl'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Warsaw'
 
 USE_I18N = True
 
@@ -140,3 +146,8 @@ MESSAGE_TAGS = {
     messages.WARNING: 'alert-warning',
     messages.ERROR: 'alert-danger',
 }
+
+LOGIN_URL = 'account:login'
+LOGOUT_URL = 'account:logout'
+LOGIN_REDIRECT_URL = 'warehouse:home'
+
