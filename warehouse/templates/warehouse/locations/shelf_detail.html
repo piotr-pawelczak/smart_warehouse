@@ -9,7 +9,7 @@
     <h1 class="mt-2">Regał {{ shelf.name }}</h1>
     <p class="mt-3">Magazyn: <a href="{{ shelf.warehouse.get_absolute_url }}" class="warehouse_link">{{ shelf.warehouse }}</a></p>
 
-    {% if request.user|has_group:"administrator" %}
+    {% if request.user|has_group:"admin" %}
      <!-- Edycja regału -->
      <div class="btn">
          <!-- Przycisk edycji regału -->

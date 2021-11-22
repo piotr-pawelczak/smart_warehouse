@@ -20,6 +20,7 @@
                         <th scope="col">Nazwa</th>
                         <th scope="col">Symbol</th>
                         <th scope="col">Miasto</th>
+                        <th scope="col">Funckja</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -28,6 +29,15 @@
                             <td><a href="{{ warehouse.get_absolute_url }}">{{ warehouse.name }}</a></td>
                             <td>{{ warehouse.symbol }}</td>
                             <td>{{ warehouse.city }}</td>
+                            {% if warehouse.type == 'storage' %}
+                                <td>Przechowywanie</td>
+                            {% endif %}
+                            {% if warehouse.type == 'receiving' %}
+                                <td>Przyjmowanie</td>
+                            {% endif %}
+                            {% if warehouse.type == 'shipping' %}
+                                <td>Wysyłka</td>
+                            {% endif %}
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -35,7 +45,7 @@
         </div>
     {% endif %}
 
-    {% if request.user|has_group:"administrator" %}
+    {% if request.user|has_group:"admin" %}
     <div class="col-lg-6 add_warehouse">
         <h3 class="mt-5">Dodaj magazyn</h3>
         <form action="." method="post" class="form-group border border-secondary rounded p-4 mx-auto my-3">

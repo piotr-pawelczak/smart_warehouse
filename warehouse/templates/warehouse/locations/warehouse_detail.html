@@ -24,6 +24,18 @@
                     <th>Adres</th>
                     <td>{{ warehouse.address }}</td>
                 </tr>
+                <tr>
+                    <th>Funckja</th>
+                    {% if warehouse.type == 'storage' %}
+                        <td>Przechowywanie towarów</td>
+                    {% endif %}
+                    {% if warehouse.type == 'receiving' %}
+                        <td>Przyjmowanie towarów</td>
+                    {% endif %}
+                    {% if warehouse.type == 'shipping' %}
+                        <td>Wysyłka towarów</td>
+                    {% endif %}
+                </tr>
             </table>
 
             <h4 class="mt-4">Opis</h4>
@@ -33,7 +45,7 @@
                 <p>Brak opisu.</p>
             {% endif %}
 
-            {% if request.user|has_group:"administrator" %}
+            {% if request.user|has_group:"admin" %}
             <!-- Zarządzanie magazynem -->
             <div class="row mt-4">
                 <h4>Zarządzaj magazynem</h4>
@@ -139,7 +151,7 @@
                                   </div>
 
                                   <!-- Usuwanie regału -->
-                                  {% if request.user|has_group:"administrator" %}
+                                  {% if request.user|has_group:"admin" %}
                                   <div class="col-6">
                                       <form action="{% url "warehouse:shelf_delete" shelf.id %}" method="post">
                                         <input type="submit" value="Usuń regał" onclick="return confirm('Czy na pewno chcesz usunąć regał?')" class="btn btn-danger col-12">
@@ -157,7 +169,7 @@
 
 
             <!-- Dodawanie regałów -->
-            {% if request.user|has_group:"administrator" %}
+            {% if request.user|has_group:"admin" %}
             <form action="." method="post" class="form-group border border-secondary rounded p-4 mx-auto my-3">
                  <p>Dodaj regał</p>
                 {{ form|crispy }}
