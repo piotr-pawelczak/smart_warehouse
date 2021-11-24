@@ -68,7 +68,7 @@
     </nav>
 
     {% if messages %}
-        <ul class="messages list-unstyled position-fixed col-12" id="msg">
+        <ul class="messages list-unstyled position-fixed col-12" id="msg" style="z-index: 1;">
             {% for message in messages %}
                 <li class="message">
                     <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">

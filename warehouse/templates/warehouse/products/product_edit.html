@@ -2,18 +2,18 @@
 {% load widget_tweaks %}
 {% load crispy_forms_filters %}
 
-{% block title %}Nowy produkt{% endblock %}
+{% block title %}Edycja produktu{% endblock %}
 
 {% block content %}
 
-    <h1>Dodaj nowy produkt</h1>
+    <h1>Edytuj produkt</h1>
     <form action="." method="post">
         {% csrf_token %}
-        {{ form.name|as_crispy_field }}
-        {{ form.description|as_crispy_field }}
-        {{ form.weight|as_crispy_field }}
+        {{ edit_form.name|as_crispy_field }}
+        {{ edit_form.description|as_crispy_field }}
+        {{ edit_form.weight|as_crispy_field }}
         <div class="form-check my-2">
-            {{ form.is_active|add_class:"form-check-input" }}
+            {{ edit_form.is_active|add_class:"form-check-input" }}
             <label class="form-check-label mt-1 mx-2"> Aktywny </label>
         </div>
         <div class="container">

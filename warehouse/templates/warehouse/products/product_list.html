@@ -1,4 +1,5 @@
 {% extends "warehouse/base.html" %}
+{% load static %}
 
 {% block title %}Produkty{% endblock %}
 
@@ -6,26 +7,47 @@
 
     <h1>Produkty</h1>
     <a href="{% url "warehouse:product_create" %}" class="btn btn-success">Nowy produkt</a>
-    <div class="table-responsive mt-3">
-        <table class="table table-bordered table-hover warehouse_list_table">
-            <thead class="warehouse_table_header">
+
+    <h3 class="mt-4">Lista produktów</h3>
+    <div class="table-responsive mt-2 mb-4">
+    <table id="example" class="table table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>Produkt</th>
+                <th>SKU</th>
+                <th>Stan</th>
+                <th>Waga [kg]</th>
+                <th>Aktywny</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
                 <tr>
-                    <th scope="col">Nazwa</th>
-                    <th scope="col">Cena</th>
-                    <th scope="col">ID</th>
-                    <th scope="col">Stan</th>
+                    <td><a class="product-link" href="{{ product.get_absolute_url }}">{{ product.name }}</a></td>
+                    <td>{{ product.sku }}</td>
+                    <td>{{ product.total_quantity }}</td>
+                    <td>{{ product.weight }}</td>
+                    {% if product.is_active %}
+                        <td><span hidden>1</span><i class="fas fa-check-circle" style="color: #198754;"></i></td>
+                    {% else %}
+                        <td><span hidden>0</span><i class="fas fa-times-circle" style="color: #cf2038;"></i></td>
+                    {% endif %}
                 </tr>
-            </thead>
-            <tbody>
-                {% for product in products %}
-                    <tr>
-                        <td><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></td>
-                        <td>{{ product.id }}</td>
-                        <td>{{ product.total_quantity }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+            {% endfor %}
+        </tbody>
+
+    </table>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#example').DataTable({
+                sort: true
+            });
+        } );
+    </script>
 
 {% endblock %}

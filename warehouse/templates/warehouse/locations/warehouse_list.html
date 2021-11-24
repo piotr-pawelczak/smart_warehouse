@@ -20,7 +20,6 @@
                         <th scope="col">Nazwa</th>
                         <th scope="col">Symbol</th>
                         <th scope="col">Miasto</th>
-                        <th scope="col">Funckja</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -29,15 +28,6 @@
                             <td><a href="{{ warehouse.get_absolute_url }}">{{ warehouse.name }}</a></td>
                             <td>{{ warehouse.symbol }}</td>
                             <td>{{ warehouse.city }}</td>
-                            {% if warehouse.type == 'storage' %}
-                                <td>Przechowywanie</td>
-                            {% endif %}
-                            {% if warehouse.type == 'receiving' %}
-                                <td>Przyjmowanie</td>
-                            {% endif %}
-                            {% if warehouse.type == 'shipping' %}
-                                <td>Wysyłka</td>
-                            {% endif %}
                         </tr>
                     {% endfor %}
                 </tbody>

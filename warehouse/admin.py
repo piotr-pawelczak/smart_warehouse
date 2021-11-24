@@ -11,7 +11,7 @@ class ProductLocationInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['name']
+    list_display = ['name', 'sku', 'is_active', 'weight']
     inlines = [ProductLocationInline]
 
 

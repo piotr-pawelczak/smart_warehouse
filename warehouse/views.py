@@ -45,11 +45,9 @@ def warehouse_detail(request, slug):
     warehouse = get_object_or_404(Warehouse, slug=slug)
     shelves = warehouse.shelves.all().order_by('name')
 
-    # Automatyczna sugestia numeru nowego regału
-    if shelves.count() == 0:
-        default_number = 1
-    else:
-        default_number = shelves.reverse()[0].shelf_number + 1
+    shelves_receiving = warehouse.shelves.filter(zone='receiving').order_by('shelf_number').all()
+    shelves_storage = warehouse.shelves.filter(zone='storage').order_by('shelf_number').all()
+    shelves_shipping = warehouse.shelves.filter(zone='shipping').order_by('shelf_number').all()
 
     # Formularz do edycji magazynu
     edit_form = WarehouseForm(instance=warehouse)
@@ -61,25 +59,15 @@ def warehouse_detail(request, slug):
 
     # Formularz do utworzenia regału
     if request.method == 'POST' and 'create_shelf_button' in request.POST:
-        form = ShelfForm(request.POST, initial={'shelf_number': default_number})
+        form = ShelfForm(request.POST)
+
         if form.is_valid():
             shelf = form.save(commit=False)
             cols = form.cleaned_data['columns']
             rows = form.cleaned_data['levels']
             shelf.warehouse = warehouse
-            shelf_name = f'{warehouse.symbol}-{shelf.shelf_number}'
-
-            # Obsługa tej samej nazwy
-            if Shelf.objects.filter(name=shelf_name):
-                messages.error(request, 'Istnieje już regał o podanym numerze')
-                return redirect(warehouse.get_absolute_url())
-
-            shelf.name = f'{warehouse.symbol}-{shelf.shelf_number}'
             shelf.save()
             messages.success(request, 'Pomyślnie dodano nowy regał')
-
-            default_number = shelves.reverse()[0].shelf_number + 1
-            form = ShelfForm(initial={'shelf_number': default_number})
 
             # Utworzenie lokalizacji
             for lev in range(rows):
@@ -88,9 +76,11 @@ def warehouse_detail(request, slug):
                     Location.objects.create(name=location_name, parent_shelf=shelf, level_index=lev+1, column_index=col+1)
 
     else:
-        form = ShelfForm(initial={'shelf_number': default_number})
+        form = ShelfForm()
 
-    context = {'warehouse': warehouse, 'form': form, 'shelves': shelves, 'edit_form': edit_form}
+    context = {'warehouse': warehouse, 'form': form, 'shelves': shelves, 'edit_form': edit_form,
+               'shelves_receiving': shelves_receiving, 'shelves_storage': shelves_storage, 'shelves_shipping': shelves_shipping
+    }
     return render(request, 'warehouse/locations/warehouse_detail.html', context)
 
 
@@ -126,37 +116,35 @@ def shelf_detail(request, pk):
         if edit_form.is_valid():
             columns = edit_form.cleaned_data['columns']
             levels = edit_form.cleaned_data['levels']
-            shelf_number = edit_form.cleaned_data['shelf_number']
             new_shelf = edit_form.save(commit=False)
-
-            # Obsługa tej samej nazwy
-            if shelf_number != old_shelf.shelf_number:
-                if Shelf.objects.filter(warehouse=shelf.warehouse, shelf_number=shelf_number):
-                    messages.error(request, 'Istnieje już regał o podanym numerze')
-                    return redirect(shelf.get_absolute_url())
-                else:
-                    for location in shelf.locations.all():
-                        location.save()
             new_shelf.save()
+
+            # Zmiana nazw lokalizacji przy zmianie nazwy regału
+            if new_shelf.name != old_shelf.name:
+                for location in locations:
+                    location.save()
 
             # Regeneracja lokalizacji
             for lev in range(levels):
                 for col in range(columns):
                     location_name = f'{shelf.name}-{col+1}-{lev+1}'
-
                     # Jeżeli lokalizacja jest nowa
                     if not Location.objects.filter(name=location_name):
                         Location.objects.create(name=location_name, parent_shelf=shelf, level_index=lev+1, column_index=col+1)
 
             # Usuwanie nadmiarowych lokalizacji
+            locations_to_delete = []
             for elem in shelf.locations.filter(column_index__gt=columns):
-                elem.delete()
+                locations_to_delete.append(elem)
             for elem in shelf.locations.filter(level_index__gt=levels):
+                locations_to_delete.append(elem)
+
+            for elem in locations_to_delete:
                 elem.delete()
 
             return redirect(shelf.get_absolute_url())
         else:
-            messages.error(request, 'Nie udało się zaktualizować regału')
+            messages.error(request, 'Nie udało się zaktualizować regału. Sprawdź, czy numer regału nie jest zajęty.')
 
     context = {'shelf': shelf, 'locations': locations, 'locations_table': locations_table, 'edit_form': edit_form}
     return render(request, 'warehouse/locations/shelf_detail.html', context)
@@ -192,7 +180,13 @@ def product_create(request):
     if request.method == 'POST':
         form = ProductForm(request.POST)
         if form.is_valid():
-            form.save()
+            new_product = form.save()
+
+            sku_length = 5
+            zeros_num = sku_length - len(str(new_product.id))
+            new_product.sku = f'P{zeros_num * "0"}{new_product.id}'
+            new_product.save()
+
             messages.success(request, 'Pomyślnie dodano nowy produkt!')
             return redirect(reverse('warehouse:product_list'))
     else:
@@ -211,8 +205,26 @@ def product_detail(request, pk, slug):
 
 @login_required
 def product_delete(request, pk):
+    print('START')
     product = get_object_or_404(Product, id=pk)
     if request.method == 'POST':
+        print('POST')
         product.delete()
         messages.warning(request, 'Produkt został usunięty')
     return redirect(reverse('warehouse:product_list'))
+
+
+@login_required
+def product_edit(request, pk):
+    product = Product.objects.get(id=pk)
+
+    edit_form = ProductForm(instance=product)
+    if request.method == 'POST':
+        edit_form = ProductForm(request.POST, instance=product)
+        if edit_form.is_valid():
+            edit_form.save()
+            return redirect(product.get_absolute_url())
+    context = {'edit_form': edit_form}
+
+    return render(request, 'warehouse/products/product_edit.html', context)
+

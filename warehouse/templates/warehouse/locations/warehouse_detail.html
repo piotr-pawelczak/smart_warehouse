@@ -24,18 +24,6 @@
                     <th>Adres</th>
                     <td>{{ warehouse.address }}</td>
                 </tr>
-                <tr>
-                    <th>Funckja</th>
-                    {% if warehouse.type == 'storage' %}
-                        <td>Przechowywanie towarów</td>
-                    {% endif %}
-                    {% if warehouse.type == 'receiving' %}
-                        <td>Przyjmowanie towarów</td>
-                    {% endif %}
-                    {% if warehouse.type == 'shipping' %}
-                        <td>Wysyłka towarów</td>
-                    {% endif %}
-                </tr>
             </table>
 
             <h4 class="mt-4">Opis</h4>
@@ -73,7 +61,6 @@
                                   <p class="mt-1">{{ edit_form.city|as_crispy_field}}</p>
                                   <p class="mt-1">{{ edit_form.address|as_crispy_field}}</p>
                                   <p class="mt-1">{{ edit_form.description|as_crispy_field}}</p>
-                                  <p class="mt-1">{{ edit_form.type|as_crispy_field}}</p>
                                   <div class="my-auto mx-auto row">
                                       <input type="submit" value="Edytuj" class="btn btn-success mx-auto col-5" name="edit_warehouse_button">
                                       <button type="button" class="btn btn-danger mx-auto col-5 offset-2" data-bs-dismiss="modal">Anuluj</button>
@@ -126,16 +113,99 @@
         <div class="col-lg-7 offset-lg-1 mt-4 mt-lg-0">
             <h4>Regały</h4>
 
+            <h5 class="mt-4">Strefa przyjmowania</h5>
             <!-- Wyświetlanie regałów -->
             <div id="accordion">
-                {% for shelf in shelves %}
-                    <div class="card">
+                {% for shelf in shelves_receiving %}
+                    <div class="card" style="z-index: 0;">
                         <div class="card-header">
                           <a class="btn" data-bs-toggle="collapse" href="#collapse-{{ shelf.name }}">
                             {{ shelf.name }}
                           </a>
                         </div>
                         <div id="collapse-{{ shelf.name }}" class="collapse hide" data-bs-parent="#accordion">
+                          <div class="card-body">
+                              <!-- Informacje o regale -->
+                              <div class="row">
+                                  <p class="col-6">Kolumny: {{ shelf.columns }}</p>
+                                  <p class="col-6">Poziomy: {{ shelf.levels }}</p>
+                              </div>
+                              <!-- Przyciski -->
+                              <div class="row">
+                                  <div class="col-6">
+                                      <a href="{{ shelf.get_absolute_url }}">
+                                          <button class="btn btn-success col-12">Szczegóły</button>
+                                      </a>
+                                  </div>
+
+                                  <!-- Usuwanie regału -->
+                                  {% if request.user|has_group:"admin" %}
+                                  <div class="col-6">
+                                      <form action="{% url "warehouse:shelf_delete" shelf.id %}" method="post">
+                                        <input type="submit" value="Usuń regał" onclick="return confirm('Czy na pewno chcesz usunąć regał?')" class="btn btn-danger col-12">
+                                        {% csrf_token %}
+                                      </form>
+                                  </div>
+                                  {% endif %}
+
+                              </div>
+                          </div>
+                        </div>
+                      </div>
+                {% endfor %}
+            </div>
+
+        <h5 class="mt-4">Strefa magazynowania</h5>
+        <div id="accordion2">
+                {% for shelf in shelves_storage %}
+                    <div class="card" style="z-index: 0;">
+                        <div class="card-header">
+                          <a class="btn" data-bs-toggle="collapse" href="#collapse2-{{ shelf.name }}">
+                            {{ shelf.name }}
+                          </a>
+                        </div>
+                        <div id="collapse2-{{ shelf.name }}" class="collapse hide" data-bs-parent="#accordion2">
+                          <div class="card-body">
+                              <!-- Informacje o regale -->
+                              <div class="row">
+                                  <p class="col-6">Kolumny: {{ shelf.columns }}</p>
+                                  <p class="col-6">Poziomy: {{ shelf.levels }}</p>
+                              </div>
+                              <!-- Przyciski -->
+                              <div class="row">
+                                  <div class="col-6">
+                                      <a href="{{ shelf.get_absolute_url }}">
+                                          <button class="btn btn-success col-12">Szczegóły</button>
+                                      </a>
+                                  </div>
+
+                                  <!-- Usuwanie regału -->
+                                  {% if request.user|has_group:"admin" %}
+                                  <div class="col-6">
+                                      <form action="{% url "warehouse:shelf_delete" shelf.id %}" method="post">
+                                        <input type="submit" value="Usuń regał" onclick="return confirm('Czy na pewno chcesz usunąć regał?')" class="btn btn-danger col-12">
+                                        {% csrf_token %}
+                                      </form>
+                                  </div>
+                                  {% endif %}
+
+                              </div>
+                          </div>
+                        </div>
+                      </div>
+                {% endfor %}
+            </div>
+
+        <h5 class="mt-4">Strefa wysyłkowa</h5>
+        <div id="accordion3">
+                {% for shelf in shelves_shipping %}
+                    <div class="card" style="z-index: 0;">
+                        <div class="card-header">
+                          <a class="btn" data-bs-toggle="collapse" href="#collapse3-{{ shelf.name }}">
+                            {{ shelf.name }}
+                          </a>
+                        </div>
+                        <div id="collapse3-{{ shelf.name }}" class="collapse hide" data-bs-parent="#accordion3">
                           <div class="card-body">
                               <!-- Informacje o regale -->
                               <div class="row">

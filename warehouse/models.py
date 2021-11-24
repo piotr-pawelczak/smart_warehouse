@@ -34,7 +34,6 @@ class Warehouse(models.Model):
     address = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     slug = models.SlugField(max_length=100, blank=True, allow_unicode=True, unique=True)
-    type = models.CharField(max_length=20, choices=WAREHOUSE_TYPE_CHOICES, default="storage")
 
     def __str__(self):
         return self.name
@@ -62,11 +61,19 @@ class Shelf(models.Model):
 
     shelf.locations.all() zwraca wszystkie lokalizacje powiązane z regałem
     """
+
+    SHELF_ZONE_CHOICES = [
+        ("storage", 'Magazynowanie'),
+        ("receiving", 'Przyjmowanie'),
+        ("shipping", 'Wysyłka')
+    ]
+
     warehouse = models.ForeignKey(Warehouse, related_name='shelves', on_delete=models.CASCADE)
     shelf_number = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
     name = models.CharField(unique=True, max_length=50)
     columns = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
     levels = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
+    zone = models.CharField(max_length=20, choices=SHELF_ZONE_CHOICES, default='storage')
 
     def __str__(self):
         return self.name
@@ -78,7 +85,15 @@ class Shelf(models.Model):
         return reverse('warehouse:shelf_detail', args=[self.pk])
 
     def save(self, *args, **kwargs):
-        self.name = f'{self.warehouse.symbol}-{self.shelf_number}'
+
+        if self.zone == 'storage':
+            zone_symbol = 'M'
+        elif self.zone == 'receiving':
+            zone_symbol = 'P'
+        else:
+            zone_symbol = 'W'
+
+        self.name = f'{self.warehouse.symbol}-{zone_symbol}-{self.shelf_number}'
         super(Shelf, self).save(*args, **kwargs)
 
 
@@ -95,17 +110,20 @@ class Location(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        self.name = f'{self.parent_shelf.warehouse.symbol}-{self.parent_shelf.shelf_number}-{self.column_index}-{self.level_index}'
+        self.name = f'{self.parent_shelf.name}-{self.column_index}-{self.level_index}'
         super(Location, self).save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('warehouse:location_detail', args=[self.id])
 
 
 class Product(models.Model):
     name = models.CharField(max_length=200)
-    unit = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     slug = models.SlugField(max_length=100, blank=True, allow_unicode=True, unique=True)
-    sku = models.CharField(max_length=20, unique=True)
+    sku = models.CharField(max_length=10, unique=True, blank=True)
     weight = models.DecimalField(max_digits=8, decimal_places=3)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         ordering = ('name',)
