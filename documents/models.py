@@ -17,6 +17,11 @@ class Contractor(models.Model):
     def __str__(self):
         return self.name
 
+    def formatted_phone(self, country='PL'):
+        string = str(self.phone_number)
+        length = 3
+        return ' '.join(string[i:i+length] for i in range(0, len(string), length))
+
 
 class Document(PolymorphicModel):
     document_number = models.CharField(max_length=50, unique=True)
@@ -30,6 +35,12 @@ class Document(PolymorphicModel):
 
     def get_absolute_url(self):
         return reverse('documents:detail', args=[self.id])
+
+    def get_value(self):
+        value = 0
+        for document_product in self.products.all():
+            value += document_product.calculate_value()
+        return value
 
 
 class GoodsReceivedNote(Document):
@@ -51,3 +62,6 @@ class ProductDocument(models.Model):
     quantity = models.PositiveIntegerField()
     document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='products')
     price = models.DecimalField(max_digits=12, decimal_places=2)
+
+    def calculate_value(self):
+        return self.quantity * self.price

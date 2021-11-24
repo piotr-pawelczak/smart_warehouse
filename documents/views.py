@@ -37,9 +37,12 @@ def goods_received_create(request):
     ProductFormSet = inlineformset_factory(Document, ProductDocument, form=ProductDocumentReceivedForm, extra=1, can_delete=True)
 
     year = datetime.datetime.now().year
-    counter = len(GoodsReceivedNote.objects.filter(created__year='2021')) + 1
-    if counter < 10:
-        counter = f'0{counter}'
+    counter = 1
+    if len(GoodsReceivedNote.objects.filter(created__year=year)) != 0:
+        latest_document = GoodsReceivedNote.objects.filter(created__year=year).order_by('-created')[0]
+        counter = int(latest_document.document_number.split('/')[2]) + 1
+        if counter < 10:
+            counter = f'0{counter}'
     document_number = f'PZ/{year}/{counter}'
 
     lot_number = datetime.datetime.now().strftime("%d/%m/%Y")
@@ -81,8 +84,8 @@ def goods_received_create(request):
                             quantity=new_product.quantity
                         )
 
-                    new_document.user = request.user
-                    new_document.save()
+            new_document.user = request.user
+            new_document.save()
 
             if new_document.confirmed:
                 messages.success(request, f'Pomyślnie utworzono dokument {document_number}.')
@@ -97,13 +100,14 @@ def goods_received_create(request):
         formset = ProductFormSet()
 
     context = {'formset': formset, 'form': form, 'document_number': document_number}
-    return render(request, 'documents/warehouse_documents/goods_received_note_create.html', context)
+    return render(request,
+                  'documents/goods_received_note/goods_received_note_create.html', context)
 
 
 @login_required
-def goods_received_notes_update(request):
+def goods_received_notes_update(request, pk):
     ProductFormSet = inlineformset_factory(Document, ProductDocument, form=ProductDocumentReceivedForm, extra=0, can_delete=True)
-    grn = GoodsReceivedNote.objects.get(id=121)
+    grn = GoodsReceivedNote.objects.get(id=pk)
 
     shelves = [x.location.parent_shelf for x in grn.products.all()]
 
@@ -129,10 +133,11 @@ def goods_received_notes_update(request):
                     updated_product.document = updated_document
                     updated_product.save()
 
-            return redirect('warehouse:home')
+            return redirect(reverse('documents:detail', args=[pk]))
 
     context = {'edit_form': edit_form, 'document_number': grn.document_number, 'formset': formset}
-    return render(request, 'documents/warehouse_documents/goods_received_note_update.html', context)
+    return render(request,
+                  'documents/goods_received_note/goods_received_note_update.html', context)
 
 
 class DocumentListView(LoginRequiredMixin, ListView):
@@ -146,6 +151,13 @@ class DocumentDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'document'
     template_name = 'documents/detail.html'
 
+
+def document_delete(request, pk):
+    document = get_object_or_404(Document, id=pk)
+    if request.method == 'POST' and not document.confirmed:
+        document.delete()
+        messages.warning(request, 'Dokument został usunięty')
+    return redirect(reverse('documents:list'))
 # ----------------------------------- Functions to handle AJAX form refresh --------------------------------------------
 
 
@@ -157,7 +169,7 @@ def load_product_locations(request):
 
 def load_shelves(request):
     warehouse_id = request.GET.get('warehouse')
-    shelves = Warehouse.objects.get(id=warehouse_id).shelves.all()
+    shelves = Warehouse.objects.get(id=warehouse_id).shelves.order_by('name', 'shelf_number').all()
     return render(request, 'documents/ajax_dropdown/shelves_dropdown_list_options.html', {'shelves': shelves})
 
 

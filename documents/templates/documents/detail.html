@@ -2,8 +2,114 @@
 {% block title %}Dokument {{ document.document_number }}{% endblock %}
 
 {% block content %}
-    <h1>{{ document.document_number }}</h1>
-    {% for product_document in document.products.all %}
-        {{ product_document.product.name }}
-    {% endfor %}
+    <h1 class="mb-2">Szczegóły dokumentu</h1>
+    <table class="table table-bordered warehouse_list_table mt-3" style="width: auto;">
+                <tr>
+                    <th>Numer dokumentu</th>
+                    <td>{{ document.document_number }}</td>
+                </tr>
+                <tr>
+                    <th>Magazyn</th>
+                    <td class="document_detail_link"><a href="{{ document.warehouse.get_absolute_url }}">{{ document.warehouse }}</a></td>
+                </tr>
+                <tr>
+                    <th>Wystawca</th>
+                    {% if document.user %}
+                        <td class="document_detail_link"><a href="{% url "account:profile" document.user.id %}" class="document_detail_link">{{ document.user.first_name }} {{ document.user.last_name }}</a></td>
+                    {% else %}
+                        <td>-</td>
+                    {% endif %}
+                </tr>
+                <tr>
+                    <th>Data wystawienia</th>
+                    <td>{{ document.created }}</td>
+                </tr>
+                <tr>
+                    <th>Zatwierdzony</th>
+                    {% if document.confirmed %}
+                        <td><i class="fas fa-check-circle" style="color: #198754;"></i></td>
+                    {% else %}
+                        <td><i class="fas fa-times-circle" style="color: #cf2038;"></i></td>
+                    {% endif %}
+                </tr>
+    </table>
+
+{% if document.document_type == 'GRN' %}
+    {% if not document.confirmed %}
+        <div class="row" style="width: 500px;">
+            <div class="col-5">
+                <a class="btn btn-warning" href="{% url "documents:goods_received_update" document.id %}" style="width: 100%;">Edytuj</a>
+            </div>
+            <div class="col-5">
+                <form method="post" action="{% url "documents:document-delete" document.id %}" class="m-0 p-0">
+                    {% csrf_token %}
+                    <input type="submit" class="btn btn-danger" value="Usuń dokument" style="width: 100%;" onclick="return confirm('Czy na pewno chcesz usunąć dokument?');">
+                </form>
+            </div>
+
+        </div>
+        <div class="mb-4"></div>
+    {% endif %}
+
+    <h4>Kontrahent</h4>
+    <table class="table table-bordered warehouse_list_table mt-3" style="width: auto;">
+                <tr>
+                    <th>Nazwa</th>
+                    <td>{{ document.contractor.name }}</td>
+                </tr>
+                <tr>
+                    <th>Adres</th>
+                    <td>{{ document.contractor.address }}</td>
+                </tr>
+                <tr>
+                    <th>Numer telefonu</th>
+                    <td>{{ document.contractor.formatted_phone }}</td>
+                </tr>
+                <tr>
+                    <th>Adres e-mail</th>
+                    <td>{{ document.contractor.email }}</td>
+                </tr>
+    </table>
+{% endif %}
+
+    <h4>Produkty</h4>
+
+    <div class="table-responsive">
+        <table class="table table-bordered warehouse_list_table mt-3" style="width: auto;">
+            <thead>
+                <tr>
+                    <th>L.p.</th>
+                    <th>Produkt</th>
+                    <th>SKU</th>
+                    <th>Ilość</th>
+                    <th>Cena jednostkowa [zł]</th>
+                    <th>Lokalizacja</th>
+                    <th>Cena [zł]</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product_document in document.products.all %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td class="document_detail_link"><a href="{{ product_document.product.get_absolute_url }}">{{ product_document.product.name }}</a></td>
+                        <td>{{ product_document.product.sku }}</td>
+                        <td>{{ product_document.quantity }}</td>
+                        <td>{{ product_document.price }}</td>
+                        <td class="document_detail_link"><a href="{{ product_document.location.get_absolute_url }}">{{ product_document.location }}</a></td>
+                        <td>{{ product_document.calculate_value }}</td>
+                    </tr>
+                {% endfor %}
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th>{{ document.get_value }}</th>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
 {% endblock %}

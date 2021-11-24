@@ -49,7 +49,6 @@ class ProductDocumentReceivedForm(forms.ModelForm):
             except (ValueError, TypeError):
                 pass
         elif self.instance.id:
-            print('Instance')
             self.fields['location'].queryset = self.instance.location.parent_shelf.locations.all()
 
         if self.is_bound:
