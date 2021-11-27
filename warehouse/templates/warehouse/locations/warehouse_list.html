@@ -1,4 +1,5 @@
 {% extends "warehouse/base.html" %}
+{% load widget_tweaks %}
 
 {% load crispy_forms_tags %}
 {% load crispy_forms_filters %}
@@ -20,6 +21,7 @@
                         <th scope="col">Nazwa</th>
                         <th scope="col">Symbol</th>
                         <th scope="col">Miasto</th>
+                        <th scope="col">Aktywny</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -28,6 +30,11 @@
                             <td><a href="{{ warehouse.get_absolute_url }}">{{ warehouse.name }}</a></td>
                             <td>{{ warehouse.symbol }}</td>
                             <td>{{ warehouse.city }}</td>
+                            {% if warehouse.is_active %}
+                                <td><i class="fas fa-check-circle" style="color: #198754;"></i></td>
+                            {% else %}
+                                <td><i class="fas fa-times-circle" style="color: #cf2038;"></i></td>
+                            {% endif %}
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -40,7 +47,15 @@
         <h3 class="mt-5">Dodaj magazyn</h3>
         <form action="." method="post" class="form-group border border-secondary rounded p-4 mx-auto my-3">
             {% csrf_token %}
-            {{ form|crispy }}
+            {{ form.name|as_crispy_field }}
+            {{ form.symbol|as_crispy_field }}
+            {{ form.city|as_crispy_field }}
+            {{ form.address|as_crispy_field }}
+            {{ form.description|as_crispy_field }}
+            <div class="form-check mt-2 mb-4">
+                {{ form.is_active|add_class:"form-check-input" }}
+                <label class="form-check-label mt-2 mx-2"> Aktywny </label>
+            </div>
             <button type="submit" class="btn btn-success mt-3">Dodaj magazyn</button>
         </form>
     </div>

@@ -45,10 +45,18 @@
     <!-- Usunięcie produktu -->
 
     <!-- Przycisk usunięcia produktu -->
-    <button type="button" class="btn btn-danger mt-3" data-bs-toggle="modal" data-bs-target="#deleteModal">
-      Usuń produkt
-    </button>
-    <a type="button" class="btn btn-warning mt-3" href="{% url "warehouse:product_edit" product.id %}">
+    {% if product.is_deletable %}
+        <button type="button" class="btn btn-danger mt-3" data-bs-toggle="modal" data-bs-target="#deleteModal">
+          Usuń produkt
+        </button>
+    {% else %}
+        <button type="button" class="btn btn-danger mt-3" disabled>
+          Usuń produkt
+        </button>
+    {% endif %}
+
+    <!-- Edycja produktu -->
+    <a class="btn btn-warning mt-3" href="{% url "warehouse:product_edit" product.id %}">
       Edytuj produkt
     </a>
 

@@ -1,4 +1,5 @@
 {% extends "warehouse/base.html" %}
+{% load widget_tweaks %}
 {% load tags %}
 
 {% load crispy_forms_tags %}
@@ -24,6 +25,14 @@
                     <th>Adres</th>
                     <td>{{ warehouse.address }}</td>
                 </tr>
+                <tr>
+                <th>Aktywny</th>
+                    {% if warehouse.is_active %}
+                        <td><i class="fas fa-check-circle" style="color: #198754;"></i></td>
+                    {% else %}
+                        <td><i class="fas fa-times-circle" style="color: #cf2038;"></i></td>
+                    {% endif %}
+                </tr>
             </table>
 
             <h4 class="mt-4">Opis</h4>
@@ -32,6 +41,11 @@
             {% else %}
                 <p>Brak opisu.</p>
             {% endif %}
+
+            <a href="{% url "warehouse:warehouse_products" warehouse.slug %}" class="btn btn-success mt-2 col-12">Produkty w magazynie</a>
+            <a href="{% url "warehouse:warehouse_documents" warehouse.slug %}" class="btn btn-success mt-2 col-12">Dokumenty powiązane z magazynem</a>
+            <a href="{% url "warehouse:warehouse_history" warehouse.slug %}" class="btn btn-success mt-2 col-12">Historia ruchu produktów</a>
+
 
             {% if request.user|has_group:"admin" %}
             <!-- Zarządzanie magazynem -->
@@ -61,6 +75,10 @@
                                   <p class="mt-1">{{ edit_form.city|as_crispy_field}}</p>
                                   <p class="mt-1">{{ edit_form.address|as_crispy_field}}</p>
                                   <p class="mt-1">{{ edit_form.description|as_crispy_field}}</p>
+                                  <div class="form-check mt-2 mb-4">
+                                      {{ edit_form.is_active|add_class:"form-check-input" }}
+                                      <label class="form-check-label mt-1 mx-2"> Aktywny </label>
+                                  </div>
                                   <div class="my-auto mx-auto row">
                                       <input type="submit" value="Edytuj" class="btn btn-success mx-auto col-5" name="edit_warehouse_button">
                                       <button type="button" class="btn btn-danger mx-auto col-5 offset-2" data-bs-dismiss="modal">Anuluj</button>
@@ -76,10 +94,16 @@
 
                 <!-- Usunięcie magazynu -->
                 <div class="col-6 mx-auto">
-                    <!-- Przycisk usunięcia magazynu -->
-                    <button type="button" class="btn btn-danger mt-3 col-12" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                      Usuń magazyn
-                    </button>
+                    {% if warehouse.is_deletable %}
+                        <!-- Przycisk usunięcia magazynu -->
+                        <button type="button" class="btn btn-danger mt-3 col-12" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                          Usuń magazyn
+                        </button>
+                    {% else %}
+                        <button disabled type="button" class="btn btn-danger mt-3 col-12">
+                          Usuń magazyn
+                        </button>
+                    {% endif %}
 
                     <!-- Potwierdzenie usunięcia magazynu -->
                     <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
@@ -120,7 +144,12 @@
                     <div class="card" style="z-index: 0;">
                         <div class="card-header">
                           <a class="btn" data-bs-toggle="collapse" href="#collapse-{{ shelf.name }}">
-                            {{ shelf.name }}
+                              {{ shelf.name }}
+                              {% if shelf.is_active %}
+                                <i class="fas fa-check-circle" style="color: #198754;"></i>
+                              {% else %}
+                                <i class="fas fa-times-circle" style="color: #cf2038;"></i>
+                              {% endif %}
                           </a>
                         </div>
                         <div id="collapse-{{ shelf.name }}" class="collapse hide" data-bs-parent="#accordion">
@@ -141,10 +170,14 @@
                                   <!-- Usuwanie regału -->
                                   {% if request.user|has_group:"admin" %}
                                   <div class="col-6">
+                                    {% if shelf.is_deletable %}
                                       <form action="{% url "warehouse:shelf_delete" shelf.id %}" method="post">
                                         <input type="submit" value="Usuń regał" onclick="return confirm('Czy na pewno chcesz usunąć regał?')" class="btn btn-danger col-12">
                                         {% csrf_token %}
                                       </form>
+                                    {% else %}
+                                        <button disabled class="btn btn-danger col-12">Usuń regał</button>
+                                    {% endif %}
                                   </div>
                                   {% endif %}
 
@@ -162,6 +195,11 @@
                         <div class="card-header">
                           <a class="btn" data-bs-toggle="collapse" href="#collapse2-{{ shelf.name }}">
                             {{ shelf.name }}
+                            {% if shelf.is_active %}
+                              <i class="fas fa-check-circle" style="color: #198754;"></i>
+                            {% else %}
+                              <i class="fas fa-times-circle" style="color: #cf2038;"></i>
+                            {% endif %}
                           </a>
                         </div>
                         <div id="collapse2-{{ shelf.name }}" class="collapse hide" data-bs-parent="#accordion2">
@@ -182,10 +220,14 @@
                                   <!-- Usuwanie regału -->
                                   {% if request.user|has_group:"admin" %}
                                   <div class="col-6">
+                                    {% if shelf.is_deletable %}
                                       <form action="{% url "warehouse:shelf_delete" shelf.id %}" method="post">
                                         <input type="submit" value="Usuń regał" onclick="return confirm('Czy na pewno chcesz usunąć regał?')" class="btn btn-danger col-12">
                                         {% csrf_token %}
                                       </form>
+                                    {% else %}
+                                        <button disabled class="btn btn-danger col-12">Usuń regał</button>
+                                    {% endif %}
                                   </div>
                                   {% endif %}
 
@@ -197,12 +239,17 @@
             </div>
 
         <h5 class="mt-4">Strefa wysyłkowa</h5>
-        <div id="accordion3">
+        <div id="accordion3" class="mb-4">
                 {% for shelf in shelves_shipping %}
                     <div class="card" style="z-index: 0;">
                         <div class="card-header">
                           <a class="btn" data-bs-toggle="collapse" href="#collapse3-{{ shelf.name }}">
-                            {{ shelf.name }}
+                              {{ shelf.name }}
+                              {% if shelf.is_active %}
+                                <i class="fas fa-check-circle" style="color: #198754;"></i>
+                              {% else %}
+                                <i class="fas fa-times-circle" style="color: #cf2038;"></i>
+                              {% endif %}
                           </a>
                         </div>
                         <div id="collapse3-{{ shelf.name }}" class="collapse hide" data-bs-parent="#accordion3">
@@ -223,10 +270,14 @@
                                   <!-- Usuwanie regału -->
                                   {% if request.user|has_group:"admin" %}
                                   <div class="col-6">
+                                    {% if shelf.is_deletable %}
                                       <form action="{% url "warehouse:shelf_delete" shelf.id %}" method="post">
                                         <input type="submit" value="Usuń regał" onclick="return confirm('Czy na pewno chcesz usunąć regał?')" class="btn btn-danger col-12">
                                         {% csrf_token %}
                                       </form>
+                                    {% else %}
+                                        <button disabled class="btn btn-danger col-12">Usuń regał</button>
+                                    {% endif %}
                                   </div>
                                   {% endif %}
 
@@ -242,7 +293,14 @@
             {% if request.user|has_group:"admin" %}
             <form action="." method="post" class="form-group border border-secondary rounded p-4 mx-auto my-3">
                  <p>Dodaj regał</p>
-                {{ form|crispy }}
+                {{ form.shelf_number|as_crispy_field }}
+                {{ form.columns|as_crispy_field }}
+                {{ form.levels|as_crispy_field }}
+                {{ form.zone|as_crispy_field }}
+                <div class="form-check mt-2 mb-4">
+                    {{ form.is_active|add_class:"form-check-input" }}
+                    <label class="form-check-label mt-1 mx-2"> Aktywny </label>
+                </div>
                 <input type="submit" value="Dodaj" class="btn btn-success mx-auto mt-3" name="create_shelf_button">
                 {% csrf_token %}
             </form>

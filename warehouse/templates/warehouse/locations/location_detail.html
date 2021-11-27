@@ -1,14 +1,112 @@
 {% extends "warehouse/base.html" %}
+{% load widget_tweaks %}
+{% load crispy_forms_filters %}
+{% load static %}
 
 {%  block title %}Lokalizacja{% endblock %}
 
 {% block content %}
     <h1>Lokalizacja {{ location }}</h1>
 
-    {% for productlocation in location.products.all %}
-        <p>{{ productlocation.product.name }}: {{ productlocation.quantity }}</p>
-    {% empty %}
-        <p>Brak produktów w tej lokalizacji</p>
-    {% endfor %}
+    <table class="table table-bordered warehouse_list_table mt-3" style="max-width: 400px;">
+        <tr>
+            <th>Aktywna</th>
+            {% if location.is_active %}
+                <td><i class="fas fa-check-circle" style="color: #198754;"></i></td>
+            {% else %}
+                <td><i class="fas fa-times-circle" style="color: #cf2038;"></i></td>
+            {% endif %}
+        </tr>
+        <tr>
+            <th>Nośność</th>
+            <td>{{ location.max_load }} kg</td>
+        </tr>
+        <tr>
+            <th>Aktualne obciążenie</th>
+            <td>0 kg</td>
+        </tr>
+        <tr>
+            <th>Regał</th>
+            <td class="document_detail_link"><a href="{{ location.parent_shelf.get_absolute_url }}">{{ location.parent_shelf }}</a></td>
+        </tr>
+        <tr>
+            <th>Magazyn</th>
+            <td class="document_detail_link"><a href="{{ location.parent_shelf.warehouse.get_absolute_url }}">{{ location.parent_shelf.warehouse }}</a></td>
+        </tr>
+    </table>
+
+    <!-- Przycisk edycji lokalizacji -->
+    <button type="button" class="btn btn-warning mt-3 input-block-level" data-bs-toggle="modal" data-bs-target="#editModal">
+        Edytuj lokalizację
+    </button>
+
+    <!-- Modal edycji lokalizacji -->
+    <div class="modal fade edit-modal" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editModalLabel">Edytuj lokalizację</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form action="" method="post" class="crispy-form-margin">
+                {% csrf_token %}
+                <div class="form-check mt-2 mb-4">
+                    {{ edit_form.is_active|add_class:"form-check-input" }}
+                    <label class="form-check-label mt-1 mx-2"> Aktywna </label>
+                </div>
+                <label>Nośność [kg]</label>
+                {{ edit_form.max_load|add_class:"form-control mb-4" }}
+                <div class="my-auto mx-auto row">
+                    <input type="submit" value="Edytuj" class="btn btn-success mx-auto col-5" name="edit_warehouse_button">
+                    <button type="button" class="btn btn-danger mx-auto col-5 offset-2" data-bs-dismiss="modal">Anuluj</button>
+                </div>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <h3 class="mt-4">Produkty w tej lokalizacji:</h3>
+
+    <div class="table-responsive mt-2 mb-4">
+    <table id="example" class="table table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>Produkt</th>
+                <th>Numer Partii</th>
+                <th>Ilość</th>
+                <th>Aktywny</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for productlocation in location.products.all %}
+                <tr>
+                    <td><a class="product-link" href="{{productlocation.product.get_absolute_url}}">{{ productlocation.product.name }}</a></td>
+                    <td>{{ productlocation.lot_number }}</td>
+                    <td>{{ productlocation.quantity }}</td>
+                    {% if productlocation.product.is_active %}
+                        <td><span hidden>1</span><i class="fas fa-check-circle" style="color: #198754;"></i></td>
+                    {% else %}
+                        <td><span hidden>0</span><i class="fas fa-times-circle" style="color: #cf2038;"></i></td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#example').DataTable({
+                sort: true
+            });
+        } );
+    </script>
 
 {% endblock %}

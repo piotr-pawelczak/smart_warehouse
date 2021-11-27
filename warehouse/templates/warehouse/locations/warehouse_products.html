@@ -1,0 +1,50 @@
+{% extends "warehouse/base.html" %}
+{% load static %}
+
+{% block title %}Produkty w magazynie{% endblock %}
+
+{% block content %}
+<h3 class="my-3">Produkty w magazynie</h3>
+    <div class="table-responsive mt-2 mb-4">
+    <table id="example" class="table table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>Produkt</th>
+                <th>Regał</th>
+                <th>Lokalizacja</th>
+                <th>Numer Partii</th>
+                <th>Ilość</th>
+                <th>Aktywny</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for productlocation in warehouse.get_products %}
+                <tr>
+                    <td><a class="product-link" href="{{productlocation.product.get_absolute_url}}">{{ productlocation.product.name }}</a></td>
+                    <td><a class="product-link" href="{{productlocation.location.parent_shelf.get_absolute_url}}">{{ productlocation.location.parent_shelf.name }}</a></td>
+                    <td><a class="product-link" href="{{productlocation.location.get_absolute_url}}">{{ productlocation.location.name }}</a></td>
+                    <td>{{ productlocation.lot_number }}</td>
+                    <td>{{ productlocation.quantity }}</td>
+                    {% if productlocation.product.is_active %}
+                        <td><span hidden>1</span><i class="fas fa-check-circle" style="color: #198754;"></i></td>
+                    {% else %}
+                        <td><span hidden>0</span><i class="fas fa-times-circle" style="color: #cf2038;"></i></td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#example').DataTable({
+                sort: true
+            });
+        } );
+    </script>
+{% endblock %}

@@ -1,15 +1,15 @@
 from django import forms
-from warehouse.models import Warehouse, Shelf, Product
+from warehouse.models import Warehouse, Shelf, Product, Location
 
 
 class WarehouseForm(forms.ModelForm):
 
     class Meta:
         model = Warehouse
-        fields = ['name', 'symbol', 'city', 'address', 'description']
+        fields = ['name', 'symbol', 'city', 'address', 'description', 'is_active']
 
         # Usunięcie etykiet
-        labels = {'name': '', 'symbol': '', 'city': '', 'address': '', 'description': ''}
+        labels = {'name': '', 'symbol': '', 'city': '', 'address': '', 'description': '', 'is_active': ''}
 
         # Ustawienie wartości wyświetlających się na polach formularza
         widgets = {
@@ -24,7 +24,7 @@ class WarehouseForm(forms.ModelForm):
 class ShelfForm(forms.ModelForm):
     class Meta:
         model = Shelf
-        fields = ['shelf_number', 'columns', 'levels', 'zone']
+        fields = ['shelf_number', 'columns', 'levels', 'zone', 'is_active']
         labels = {'shelf_number': 'Numer regału', 'columns': 'Liczba kolumn', 'levels': 'Liczba poziomów', 'zone': 'Strefa'}
 
     def clean(self):
@@ -41,3 +41,19 @@ class ProductForm(forms.ModelForm):
         model = Product
         fields = ['name', 'description',  'weight', 'is_active']
         labels = {'name': 'Nazwa produktu', 'description': 'Opis', 'weight': 'Waga [kg]', 'is_active': ''}
+
+
+class LocationForm(forms.ModelForm):
+    class Meta:
+        model = Location
+        fields = ['max_load', 'is_active']
+
+    def clean_max_load(self):
+        max_load = self.cleaned_data['max_load']
+        if max_load < 0:
+            raise forms.ValidationError('Nośność nie może być mniejsza od 0')
+        return max_load
+
+
+class LoadLocationForm(forms.Form):
+    max_load = forms.DecimalField(max_digits=12, decimal_places=2, min_value=0)

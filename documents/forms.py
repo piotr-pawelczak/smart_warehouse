@@ -15,6 +15,10 @@ class GoodsReceivedForm(forms.ModelForm):
         model = GoodsReceivedNote
         fields = ['contractor', 'confirmed', 'warehouse']
 
+    def __init__(self, *args, **kwargs):
+        super(GoodsReceivedForm, self).__init__(*args, **kwargs)
+        self.fields['warehouse'].queryset = Warehouse.objects.filter(is_active=True)
+
 
 class ProductDocumentReceivedForm(forms.ModelForm):
 
@@ -29,30 +33,30 @@ class ProductDocumentReceivedForm(forms.ModelForm):
 
         self.fields['shelf'].queryset = Shelf.objects.none()
         self.fields['location'].queryset = Location.objects.none()
-        self.empty_permitted = False
+        self.fields['product'].queryset = Product.objects.filter(is_active=True)
 
         if 'warehouse' in self.data:
             try:
                 warehouse_id = int(self.data.get('warehouse'))
-                self.fields['shelf'].queryset = Warehouse.objects.get(id=warehouse_id).shelves.all()
+                self.fields['shelf'].queryset = Warehouse.objects.get(id=warehouse_id).shelves.filter(is_active=True)
             except (ValueError, TypeError):
                 pass
         elif self.instance.id:
-            self.fields['shelf'].queryset = self.instance.location.parent_shelf.warehouse.shelves.all()
+            self.fields['shelf'].queryset = self.instance.location.parent_shelf.warehouse.shelves.filter(is_active=True)
         elif self.is_bound:
-            self.fields['shelf'].queryset = Shelf.objects.all()
+            self.fields['shelf'].queryset = Shelf.objects.filter(is_active=True)
 
         if 'shelf' in self.data:
             try:
                 shelf_id = int(self.data.get('shelf'))
-                self.fields['location'].queryset = Shelf.objects.get(id=shelf_id).locations.all()
+                self.fields['location'].queryset = Shelf.objects.get(id=shelf_id).locations.filter(is_active=True)
             except (ValueError, TypeError):
                 pass
         elif self.instance.id:
-            self.fields['location'].queryset = self.instance.location.parent_shelf.locations.all()
+            self.fields['location'].queryset = self.instance.location.parent_shelf.locations.filter(is_active=True)
 
         if self.is_bound:
-            self.fields['location'].queryset = Location.objects.all()
+            self.fields['location'].queryset = Location.objects.filter(is_active=True)
 
 
 class ProductDocumentForm(forms.ModelForm):

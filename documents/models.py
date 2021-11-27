@@ -27,7 +27,7 @@ class Document(PolymorphicModel):
     document_number = models.CharField(max_length=50, unique=True)
     created = models.DateTimeField(auto_now_add=True)
     confirmed = models.BooleanField(default=False)
-    warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE)
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE, related_name='documents')
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
@@ -45,7 +45,7 @@ class Document(PolymorphicModel):
 
 class GoodsReceivedNote(Document):
     contractor = models.ForeignKey(Contractor, on_delete=models.SET_NULL, null=True)
-    document_type = models.CharField(default='GRN', max_length=3)
+    document_type = models.CharField(default='PZ', max_length=3)
 
 
 class GoodsIssueNote(Document):
@@ -58,10 +58,14 @@ class InternalGoodsIssueNote(Document):
 
 class ProductDocument(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='documents')
-    location = models.ForeignKey(Location, on_delete=models.CASCADE)
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='documents')
     quantity = models.PositiveIntegerField()
     document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='products')
     price = models.DecimalField(max_digits=12, decimal_places=2)
+
+    @property
+    def type(self):
+        return self.document.document_type
 
     def calculate_value(self):
         return self.quantity * self.price

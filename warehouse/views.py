@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from .models import Warehouse, Location, Shelf, Product
 from django.shortcuts import get_object_or_404
-from .forms import WarehouseForm, ShelfForm, ProductForm
+from .forms import WarehouseForm, ShelfForm, ProductForm, LocationForm, LoadLocationForm
 from django.contrib import messages
 from django.urls import reverse
 import copy
@@ -72,24 +72,26 @@ def warehouse_detail(request, slug):
             # Utworzenie lokalizacji
             for lev in range(rows):
                 for col in range(cols):
-                    location_name = f'{shelf.name}-{col+1}-{lev+1}'
-                    Location.objects.create(name=location_name, parent_shelf=shelf, level_index=lev+1, column_index=col+1)
+                    location_name = f'{shelf.name}-{col + 1}-{lev + 1}'
+                    Location.objects.create(name=location_name, parent_shelf=shelf, level_index=lev + 1,
+                                            column_index=col + 1)
 
     else:
         form = ShelfForm()
 
     context = {'warehouse': warehouse, 'form': form, 'shelves': shelves, 'edit_form': edit_form,
-               'shelves_receiving': shelves_receiving, 'shelves_storage': shelves_storage, 'shelves_shipping': shelves_shipping
-    }
+               'shelves_receiving': shelves_receiving, 'shelves_storage': shelves_storage,
+               'shelves_shipping': shelves_shipping
+               }
     return render(request, 'warehouse/locations/warehouse_detail.html', context)
 
 
 @login_required
-def warehouse_delete(request, slug):
+def warehouse_delete(request, pk):
     """
     Widok odpowiedzialny za usuwanie magazynu. Zostaje przekierowany do listy magazynów
     """
-    warehouse = get_object_or_404(Warehouse, slug=slug)
+    warehouse = get_object_or_404(Warehouse, id=pk)
     if request.method == 'POST':
         warehouse.delete()
         messages.warning(request, 'Magazyn został usunięty')
@@ -104,20 +106,30 @@ def shelf_detail(request, pk):
     # Zamiana listy obiektów na tablicę
     n = shelf.levels
     table = list(locations)
-    table_2d = [table[i:i+n] for i in range(0, len(table), n)]
+    table_2d = [table[i:i + n] for i in range(0, len(table), n)]
     locations_table = list(map(list, zip(*table_2d)))
     locations_table.reverse()
 
+    # Formularz edycji nośności
+    if request.method == 'POST' and 'load-location' in request.POST:
+        load_form = LoadLocationForm(request.POST)
+        if load_form.is_valid():
+            max_load = load_form.cleaned_data['max_load']
+            for location in locations:
+                location.max_load = max_load
+                location.save()
+    else:
+        load_form = LoadLocationForm()
+
     # Formularz do edycji regału
     edit_form = ShelfForm(instance=shelf)
-    if request.method == 'POST':
+    if request.method == 'POST' and 'shelf-edit' in request.POST:
         old_shelf = copy.copy(shelf)
         edit_form = ShelfForm(request.POST, instance=shelf)
         if edit_form.is_valid():
             columns = edit_form.cleaned_data['columns']
             levels = edit_form.cleaned_data['levels']
             new_shelf = edit_form.save(commit=False)
-            new_shelf.save()
 
             # Zmiana nazw lokalizacji przy zmianie nazwy regału
             if new_shelf.name != old_shelf.name:
@@ -125,28 +137,33 @@ def shelf_detail(request, pk):
                     location.save()
 
             # Regeneracja lokalizacji
-            for lev in range(levels):
-                for col in range(columns):
-                    location_name = f'{shelf.name}-{col+1}-{lev+1}'
-                    # Jeżeli lokalizacja jest nowa
-                    if not Location.objects.filter(name=location_name):
-                        Location.objects.create(name=location_name, parent_shelf=shelf, level_index=lev+1, column_index=col+1)
-
-            # Usuwanie nadmiarowych lokalizacji
             locations_to_delete = []
             for elem in shelf.locations.filter(column_index__gt=columns):
                 locations_to_delete.append(elem)
             for elem in shelf.locations.filter(level_index__gt=levels):
                 locations_to_delete.append(elem)
 
-            for elem in locations_to_delete:
-                elem.delete()
+            if any([not x.is_deletable for x in locations_to_delete]):
+                messages.error(request, 'Nie można usunąć lokalizacji, z którą jest powiązany dokument')
+                return redirect(shelf.get_absolute_url())
+            else:
+                new_shelf.save()
+                for elem in locations_to_delete:
+                    elem.delete()
+
+                for lev in range(levels):
+                    for col in range(columns):
+                        location_name = f'{shelf.name}-{col + 1}-{lev + 1}'
+                        # Jeżeli lokalizacja jest nowa
+                        if not Location.objects.filter(name=location_name):
+                            Location.objects.create(name=location_name, parent_shelf=shelf, level_index=lev + 1,
+                                                    column_index=col + 1)
 
             return redirect(shelf.get_absolute_url())
         else:
             messages.error(request, 'Nie udało się zaktualizować regału. Sprawdź, czy numer regału nie jest zajęty.')
 
-    context = {'shelf': shelf, 'locations': locations, 'locations_table': locations_table, 'edit_form': edit_form}
+    context = {'shelf': shelf, 'locations': locations, 'locations_table': locations_table, 'edit_form': edit_form, 'load_form': load_form}
     return render(request, 'warehouse/locations/shelf_detail.html', context)
 
 
@@ -163,7 +180,15 @@ def shelf_delete(request, pk):
 @login_required
 def location_detail(request, pk):
     location = get_object_or_404(Location, id=pk)
-    context = {'location': location}
+    edit_form = LocationForm(instance=location)
+
+    if request.method == 'POST':
+        edit_form = LocationForm(request.POST, instance=location)
+        if edit_form.is_valid():
+            edit_form.save()
+            return redirect(location.get_absolute_url())
+
+    context = {'location': location, 'edit_form': edit_form}
     return render(request, 'warehouse/locations/location_detail.html', context)
 
 
@@ -176,7 +201,6 @@ def product_list(request):
 
 @login_required
 def product_create(request):
-
     if request.method == 'POST':
         form = ProductForm(request.POST)
         if form.is_valid():
@@ -205,10 +229,8 @@ def product_detail(request, pk, slug):
 
 @login_required
 def product_delete(request, pk):
-    print('START')
     product = get_object_or_404(Product, id=pk)
     if request.method == 'POST':
-        print('POST')
         product.delete()
         messages.warning(request, 'Produkt został usunięty')
     return redirect(reverse('warehouse:product_list'))
@@ -228,3 +250,26 @@ def product_edit(request, pk):
 
     return render(request, 'warehouse/products/product_edit.html', context)
 
+
+@login_required
+def warehouse_products(request, slug):
+    warehouse = Warehouse.objects.get(slug=slug)
+    context = {'warehouse': warehouse}
+    return render(request, 'warehouse/locations/warehouse_products.html', context)
+
+
+@login_required
+def warehouse_documents(request, slug):
+    warehouse = Warehouse.objects.get(slug=slug)
+    context = {'warehouse': warehouse}
+    return render(request, 'warehouse/locations/warehouse_documents.html', context)
+
+
+@login_required
+def warehouse_history(request, slug):
+    warehouse = Warehouse.objects.get(slug=slug)
+    received_type = ['PZ', 'PW', 'MM+']
+    shipped_type = ['WZ', 'WW', 'MM-']
+
+    context = {'warehouse': warehouse, 'received_type': received_type, 'shipped_type': shipped_type}
+    return render(request, 'warehouse/locations/warehouse_history.html', context)

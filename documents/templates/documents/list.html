@@ -29,23 +29,24 @@
     </div>
 
 
-
     <h3 class="mt-4">Lista dokumentów</h3>
     <div class="table-responsive mt-2 mb-4">
-    <table id="example" class="table table-striped" style="width:100%">
+    <table id="document-list" class="table table-striped" style="width:100%">
         <thead>
             <tr>
                 <th>Numer dokumentu</th>
                 <th>Data utworzenia</th>
                 <th>Kontrahent</th>
+                <th>Magazyn</th>
             </tr>
         </thead>
         <tbody>
-            {% for document in documents %}
+            {% for document in documents.confirmed_documents %}
                 <tr>
                     <td><a href="{{ document.get_absolute_url }}" class="document_link" target="_blank">{{ document.document_number }}</a></td>
                     <td>{{ document.created }}</td>
                     <td>{{ document.contractor }}</td>
+                    <td>{{ document.warehouse }}</td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -53,12 +54,43 @@
     </table>
     </div>
 
+    <h3 class="mt-6">Wersje robocze dokumentów</h3>
+    {% if documents.not_confirmed_documents %}
+        <div class="table-responsive mt-2 mb-4">
+        <table id="documents-draft-list" class="table table-striped" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Numer dokumentu</th>
+                    <th>Data utworzenia</th>
+                    <th>Kontrahent</th>
+                    <th>Magazyn</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for document in documents.not_confirmed_documents %}
+                    <tr>
+                        <td><a href="{{ document.get_absolute_url }}" class="document_link" target="_blank">{{ document.document_number }}</a></td>
+                        <td>{{ document.created }}</td>
+                        <td>{{ document.contractor }}</td>
+                        <td>{{ document.warehouse }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    {% else %}
+        <p>Brak wersji roboczych dokumentów</p>
+    {% endif %}
+
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
     <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
     <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap5.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('#example').DataTable({
+            $('#document-list').DataTable({
+                sort: false
+            });
+            $('#documents-draft-list').DataTable({
                 sort: false
             });
         } );

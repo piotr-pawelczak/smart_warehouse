@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db import models
 from django.urls import reverse
 from django.core.validators import MinValueValidator
@@ -34,6 +36,7 @@ class Warehouse(models.Model):
     address = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     slug = models.SlugField(max_length=100, blank=True, allow_unicode=True, unique=True)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
@@ -44,6 +47,25 @@ class Warehouse(models.Model):
         :return: Adres url magazynu
         """
         return reverse('warehouse:warehouse_detail', args=[self.slug])
+
+    def get_products(self):
+        shelves = self.shelves.all()
+        products = [shelf.get_products() for shelf in shelves]
+        products_flat = [product for queryset in products for product in queryset]
+        return products_flat
+
+    def get_history(self):
+        documents = self.documents.all()
+        product_documents = [x.products.all() for x in documents if x.confirmed]
+        products_flat = [product for queryset in product_documents for product in queryset]
+        return products_flat
+
+    @property
+    def is_deletable(self):
+        for shelf in self.shelves.all():
+            if not shelf.is_deletable:
+                return False
+        return True
 
     def save(self, *args, **kwargs):
         self.slug = slugify(remove_accents(self.name))
@@ -74,6 +96,7 @@ class Shelf(models.Model):
     columns = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
     levels = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
     zone = models.CharField(max_length=20, choices=SHELF_ZONE_CHOICES, default='storage')
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
@@ -83,6 +106,18 @@ class Shelf(models.Model):
 
     def get_absolute_url(self):
         return reverse('warehouse:shelf_detail', args=[self.pk])
+
+    def get_products(self):
+        products = [list(x.products.all()) for x in self.locations.all()]
+        products_flat = [product for queryset in products for product in queryset]
+        return products_flat
+
+    @property
+    def is_deletable(self):
+        for location in self.locations.all():
+            if not location.is_deletable:
+                return False
+        return True
 
     def save(self, *args, **kwargs):
 
@@ -102,6 +137,8 @@ class Location(models.Model):
     parent_shelf = models.ForeignKey(Shelf, related_name='locations', on_delete=models.CASCADE)
     column_index = models.SmallIntegerField(default=1, validators=[MinValueValidator(1)])
     level_index = models.SmallIntegerField(default=1, validators=[MinValueValidator(1)])
+    is_active = models.BooleanField(default=True)
+    max_load = models.DecimalField(max_digits=12, decimal_places=2, default=100)
 
     class Meta:
         ordering = ('name',)
@@ -109,12 +146,18 @@ class Location(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def is_deletable(self):
+        return not self.documents.exists()
+
     def save(self, *args, **kwargs):
         self.name = f'{self.parent_shelf.name}-{self.column_index}-{self.level_index}'
         super(Location, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse('warehouse:location_detail', args=[self.id])
+
+
 
 
 class Product(models.Model):
@@ -134,6 +177,10 @@ class Product(models.Model):
         for q in self.locations.all():
             quantity += q.quantity
         return quantity
+
+    @property
+    def is_deletable(self):
+        return not self.documents.exists()
 
     def __str__(self):
         return f'{self.name} [{self.sku}]'

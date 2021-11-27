@@ -41,8 +41,6 @@ def goods_received_create(request):
     if len(GoodsReceivedNote.objects.filter(created__year=year)) != 0:
         latest_document = GoodsReceivedNote.objects.filter(created__year=year).order_by('-created')[0]
         counter = int(latest_document.document_number.split('/')[2]) + 1
-        if counter < 10:
-            counter = f'0{counter}'
     document_number = f'PZ/{year}/{counter}'
 
     lot_number = datetime.datetime.now().strftime("%d/%m/%Y")
@@ -142,8 +140,15 @@ def goods_received_notes_update(request, pk):
 
 class DocumentListView(LoginRequiredMixin, ListView):
     template_name = 'documents/list.html'
-    queryset = Document.objects.filter(confirmed=True).order_by('-created')
     context_object_name = 'documents'
+
+    def get_queryset(self):
+        queryset = {
+            'all_documents': Document.objects.all(),
+            'confirmed_documents': Document.objects.filter(confirmed=True).order_by('-created'),
+            'not_confirmed_documents': Document.objects.filter(confirmed=False).order_by('-created')
+        }
+        return queryset
 
 
 class DocumentDetailView(LoginRequiredMixin, DetailView):
@@ -163,19 +168,19 @@ def document_delete(request, pk):
 
 def load_product_locations(request):
     product_id = request.GET.get('product')
-    locations = Product.objects.get(id=product_id).locations.all()
+    locations = Product.objects.get(id=product_id).locations.filter(is_active=True)
     return render(request, 'documents/ajax_dropdown/productlocation_dropdown_list_options.html', {'locations': locations})
 
 
 def load_shelves(request):
     warehouse_id = request.GET.get('warehouse')
-    shelves = Warehouse.objects.get(id=warehouse_id).shelves.order_by('name', 'shelf_number').all()
+    shelves = Warehouse.objects.get(id=warehouse_id).shelves.order_by('name', 'shelf_number').filter(is_active=True)
     return render(request, 'documents/ajax_dropdown/shelves_dropdown_list_options.html', {'shelves': shelves})
 
 
 def load_locations(request):
     shelf_id = request.GET.get('shelf')
-    locations = Shelf.objects.get(id=shelf_id).locations.all()
+    locations = Shelf.objects.get(id=shelf_id).locations.filter(is_active=True)
     return render(request, 'documents/ajax_dropdown/locations_dropdown_list_options.html', {'locations': locations})
 
 

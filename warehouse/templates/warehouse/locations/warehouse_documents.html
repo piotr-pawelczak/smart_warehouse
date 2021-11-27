@@ -1,0 +1,43 @@
+{% extends "warehouse/base.html" %}
+{% load static %}
+
+{% block title %}Dokumenty w magazynie{% endblock %}
+
+{% block content %}
+
+    <h3 class="mt-4">Lista dokumentów powiązanych z magazynem {{ warehouse.name }}</h3>
+    <div class="table-responsive mt-2 mb-4">
+    <table id="example" class="table table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>Numer dokumentu</th>
+                <th>Data utworzenia</th>
+                <th>Kontrahent</th>
+                <th>Kwota [zł]</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for document in warehouse.documents.all %}
+                <tr>
+                    <td><a href="{{ document.get_absolute_url }}" class="document_link" target="_blank">{{ document.document_number }}</a></td>
+                    <td>{{ document.created }}</td>
+                    <td>{{ document.contractor }}</td>
+                    <td>{{ document.get_value }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#example').DataTable({
+                sort: true
+            });
+        } );
+    </script>
+{% endblock %}

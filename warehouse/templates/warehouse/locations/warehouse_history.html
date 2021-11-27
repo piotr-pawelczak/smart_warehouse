@@ -1,0 +1,55 @@
+{% extends "warehouse/base.html" %}
+{% load static %}
+
+{% block title %}Historia magazynu{% endblock %}
+
+{% block content %}
+
+
+    <h3 class="mt-4">Przyjęcia i wydania do magazynu: {{ warehouse.name }}</h3>
+    <div class="table-responsive mt-2 mb-4">
+    <table id="example" class="table table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>Produkt</th>
+                <th>SKU</th>
+                <th>Data</th>
+                <th>Ilość</th>
+                <th>Dokument</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for productdocument in warehouse.get_history %}
+                <tr>
+                    <td><a href="{{ productdocument.product.get_absolute_url }}" class="document_link" target="_blank">{{ productdocument.product.name }}</a></td>
+                    <td>{{ productdocument.product.sku }}</td>
+                    <td>{{ productdocument.document.created }}</td>
+
+                    {% if productdocument.type in received_type %}
+                        <td style="color: green; font-weight: bold;">+{{ productdocument.quantity }}</td>
+                    {% else %}
+                        <td style="color: red; font-weight: bold;">-{{ productdocument.quantity }}</td>
+                    {% endif %}
+
+                    <td><a href="{{ productdocument.document.get_absolute_url }}" class="document_link" target="_blank">{{ productdocument.document.document_number }}</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+    </div>
+
+    <h3>Przesunięcia międzymagazynowe</h3>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#example').DataTable({
+                sort: true,
+                "order": [[2, 'desc']]
+            });
+        } );
+    </script>
+{% endblock %}
