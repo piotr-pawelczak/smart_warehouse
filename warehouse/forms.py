@@ -48,11 +48,9 @@ class LocationForm(forms.ModelForm):
         model = Location
         fields = ['max_load', 'is_active']
 
-    def clean_max_load(self):
-        max_load = self.cleaned_data['max_load']
-        if max_load < 0:
-            raise forms.ValidationError('Nośność nie może być mniejsza od 0')
-        return max_load
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['max_load'] = forms.DecimalField(max_digits=12, decimal_places=2, min_value=0)
 
 
 class LoadLocationForm(forms.Form):

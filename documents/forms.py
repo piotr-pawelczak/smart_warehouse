@@ -34,6 +34,7 @@ class ProductDocumentReceivedForm(forms.ModelForm):
         self.fields['shelf'].queryset = Shelf.objects.none()
         self.fields['location'].queryset = Location.objects.none()
         self.fields['product'].queryset = Product.objects.filter(is_active=True)
+        self.fields['price'] = forms.DecimalField(max_digits=12, decimal_places=2, min_value=0)
 
         if 'warehouse' in self.data:
             try:
