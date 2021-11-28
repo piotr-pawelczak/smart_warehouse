@@ -48,6 +48,10 @@ class GoodsReceivedNote(Document):
     document_type = models.CharField(default='PZ', max_length=3)
 
 
+class InternalGoodsReceivedNote(Document):
+    document_type = models.CharField(default='PW', max_length=3)
+
+
 class GoodsIssueNote(Document):
     contractor = models.ForeignKey(Contractor, on_delete=models.SET_NULL, null=True)
 

@@ -34,11 +34,11 @@
                 </tr>
     </table>
 
-{% if document.document_type == 'PZ' %}
+
     {% if not document.confirmed %}
         <div class="row" style="width: 500px;">
             <div class="col-5">
-                <a class="btn btn-warning" href="{% url "documents:goods_received_update" document.id %}" style="width: 100%;">Edytuj</a>
+                <a class="btn btn-warning" href="{% url "documents:goods_received_update" document.document_type|lower document.id %}" style="width: 100%;">Edytuj</a>
             </div>
             <div class="col-5">
                 <form method="post" action="{% url "documents:document-delete" document.id %}" class="m-0 p-0">
@@ -51,6 +51,7 @@
         <div class="mb-4"></div>
     {% endif %}
 
+{% if document.document_type == 'PZ' %}
     <h4>Kontrahent</h4>
     <table class="table table-bordered warehouse_list_table mt-3" style="width: auto;">
                 <tr>

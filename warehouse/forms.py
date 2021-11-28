@@ -50,8 +50,8 @@ class LocationForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['max_load'] = forms.DecimalField(max_digits=12, decimal_places=2, min_value=0)
+        self.fields['max_load'] = forms.DecimalField(max_digits=12, decimal_places=3, min_value=0)
 
 
 class LoadLocationForm(forms.Form):
-    max_load = forms.DecimalField(max_digits=12, decimal_places=2, min_value=0)
+    max_load = forms.DecimalField(max_digits=12, decimal_places=3, min_value=0)

@@ -20,6 +20,17 @@ class GoodsReceivedForm(forms.ModelForm):
         self.fields['warehouse'].queryset = Warehouse.objects.filter(is_active=True)
 
 
+class InternalGoodsReceivedForm(forms.ModelForm):
+
+    class Meta:
+        model = InternalGoodsReceivedNote
+        fields = ['confirmed', 'warehouse']
+
+    def __init__(self, *args, **kwargs):
+        super(InternalGoodsReceivedForm, self).__init__(*args, **kwargs)
+        self.fields['warehouse'].queryset = Warehouse.objects.filter(is_active=True)
+
+
 class ProductDocumentReceivedForm(forms.ModelForm):
 
     shelf = forms.ModelChoiceField(queryset=Shelf.objects.all())

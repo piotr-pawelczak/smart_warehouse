@@ -3,11 +3,21 @@
 {% load crispy_forms_filters %}
 {% load static %}
 
-{% block title %}Przyjęcie zewnętrzne{% endblock %}
+{% block title %}
+    {% if document_type == 'pz' %}
+        Przyjęcie zewnętrzne
+    {% else %}
+        Przyjęcie wewnętrzne
+    {% endif %}
+{% endblock %}
 
 {% block content %}
 
-    <h1>Edytuj przyjęcie zewnętrzne</h1>
+    {% if document_type == 'pz' %}
+        <h1>Edytuj przyjęcie zewnętrzne</h1>
+    {% else %}
+        <h1>Edytuj przyjęcie wewnętrzne</h1>
+    {% endif %}
 
     <div class="card bg-light text-black my-3" style="position: relative; z-index: -1;">
         <div class="card-body">Numer dokumentu: {{ document_number }}</div>
@@ -18,8 +28,11 @@
     {% else %}
     <form method="post" action="" id="documentForm" data-url="{% url "documents:ajax_load_shelves" %}" location-url="{% url "documents:ajax_load_locations" %}">
         {% csrf_token %}
-        <label>Kontrahent</label>
-        {{ edit_form.contractor|add_class:"form-control" }}
+
+        {% if document_type == 'pz' %}
+            <label>Kontrahent</label>
+            {{ edit_form.contractor|add_class:"form-control" }}
+        {% endif %}
 
         <label>Magazyn</label>
         {{ edit_form.warehouse|add_class:"form-control" }}
@@ -72,8 +85,6 @@
                 Niezatwierdzony dokument będzie wprowadzony do systemu jako kopia robocza. Po zatwierdzeniu dokumentu nie będzie możliwości edycji.
             </p>
         </div>
-
-
         <input type="submit" class="btn btn-success mt-3" value="Zapisz" id="confirm">
     </form>
     {% endif %}

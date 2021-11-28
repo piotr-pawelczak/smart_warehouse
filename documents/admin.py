@@ -24,14 +24,22 @@ class InternalGoodsIssueNoteAdmin(PolymorphicChildModelAdmin):
 
 @admin.register(GoodsReceivedNote)
 class GoodsReceivedNoteAdmin(PolymorphicChildModelAdmin):
-    base_model = GoodsIssueNote
+    base_model = GoodsReceivedNote
     inlines = [ProductDocumentInline]
+    list_display = ['document_number', 'confirmed', 'created']
+
+
+@admin.register(InternalGoodsReceivedNote)
+class InternalGoodsReceivedNoteAdmin(PolymorphicChildModelAdmin):
+    base_model = InternalGoodsReceivedNote
+    inlines = [ProductDocumentInline]
+    list_display = ['document_number', 'confirmed', 'created']
 
 
 @admin.register(Document)
 class DocumentAdmin(PolymorphicParentModelAdmin):
     base_model = Document
-    child_models = (GoodsIssueNote, InternalGoodsIssueNote, GoodsReceivedNote)
+    child_models = (GoodsIssueNote, InternalGoodsIssueNote, GoodsReceivedNote, InternalGoodsReceivedNote)
     list_display = ['document_number', 'confirmed', 'created']
 
 

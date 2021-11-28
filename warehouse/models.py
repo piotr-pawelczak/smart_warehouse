@@ -138,7 +138,7 @@ class Location(models.Model):
     column_index = models.SmallIntegerField(default=1, validators=[MinValueValidator(1)])
     level_index = models.SmallIntegerField(default=1, validators=[MinValueValidator(1)])
     is_active = models.BooleanField(default=True)
-    max_load = models.DecimalField(max_digits=12, decimal_places=2, default=100)
+    max_load = models.DecimalField(max_digits=12, decimal_places=3, default=100)
 
     class Meta:
         ordering = ('name',)
@@ -150,14 +150,22 @@ class Location(models.Model):
     def is_deletable(self):
         return not self.documents.exists()
 
+    @property
+    def get_current_load(self):
+        products = self.products.all()
+        current_load = 0
+        for productlocation in products:
+            weight = productlocation.product.weight
+            quantity = productlocation.quantity
+            current_load += weight * quantity
+        return current_load
+
     def save(self, *args, **kwargs):
         self.name = f'{self.parent_shelf.name}-{self.column_index}-{self.level_index}'
         super(Location, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse('warehouse:location_detail', args=[self.id])
-
-
 
 
 class Product(models.Model):
