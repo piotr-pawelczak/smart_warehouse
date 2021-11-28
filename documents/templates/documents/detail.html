@@ -36,11 +36,11 @@
 
 
     {% if not document.confirmed %}
-        <div class="row" style="width: 500px;">
-            <div class="col-5">
+        <div class="row" style="width: 100%;">
+            <div class="col-lg-3 col-sm-6 col-6">
                 <a class="btn btn-warning" href="{% url "documents:goods_received_update" document.document_type|lower document.id %}" style="width: 100%;">Edytuj</a>
             </div>
-            <div class="col-5">
+            <div class="col-lg-3 col-sm-6 col-6">
                 <form method="post" action="{% url "documents:document-delete" document.id %}" class="m-0 p-0">
                     {% csrf_token %}
                     <input type="submit" class="btn btn-danger" value="Usuń dokument" style="width: 100%;" onclick="return confirm('Czy na pewno chcesz usunąć dokument?');">
