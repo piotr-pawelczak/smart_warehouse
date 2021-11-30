@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from django.db import models
 from django.urls import reverse
 from django.core.validators import MinValueValidator
@@ -49,10 +47,25 @@ class Warehouse(models.Model):
         return reverse('warehouse:warehouse_detail', args=[self.slug])
 
     def get_products(self):
+        """"
+            Funkcja zwraca listę lokalizacji produktów
+            Lista zawiera obiekty klasy ProductLocation
+        """
         shelves = self.shelves.all()
         products = [shelf.get_products() for shelf in shelves]
         products_flat = [product for queryset in products for product in queryset]
         return products_flat
+
+    def get_available_products(self):
+        """"
+        Funkcja zwraca QuerySet dostępnych produktów
+        """
+        products_list = [elem.product for elem in self.get_products()]
+        products_ids = [elem.id for elem in products_list]
+        products_ids = list(dict.fromkeys(products_ids))
+        products_queryset = Product.objects.filter(id__in=products_ids, is_active=True)
+
+        return products_queryset
 
     def get_history(self):
         documents = self.documents.all()
@@ -108,7 +121,7 @@ class Shelf(models.Model):
         return reverse('warehouse:shelf_detail', args=[self.pk])
 
     def get_products(self):
-        products = [list(x.products.all()) for x in self.locations.all()]
+        products = [x.products.all() for x in self.locations.all()]
         products_flat = [product for queryset in products for product in queryset]
         return products_flat
 

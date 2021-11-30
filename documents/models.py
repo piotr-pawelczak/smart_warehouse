@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from polymorphic.models import PolymorphicModel
-from warehouse.models import Product, Location, Warehouse
+from warehouse.models import Product, Location, Warehouse, ProductLocation
 from django.urls import reverse
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -54,10 +54,21 @@ class InternalGoodsReceivedNote(Document):
 
 class GoodsIssueNote(Document):
     contractor = models.ForeignKey(Contractor, on_delete=models.SET_NULL, null=True)
+    document_type = models.CharField(default='WZ', max_length=3)
 
 
 class InternalGoodsIssueNote(Document):
-    pass
+    document_type = models.CharField(default='RW', max_length=3)
+
+
+class InterBranchTransferMinus(Document):
+    target_warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE)
+    document_type = models.CharField(default='MM-', max_length=3)
+
+
+class InterBranchTransferPlus(Document):
+    source_warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE)
+    document_type = models.CharField(default='MM+', max_length=3)
 
 
 class ProductDocument(models.Model):
@@ -66,6 +77,7 @@ class ProductDocument(models.Model):
     quantity = models.PositiveIntegerField()
     document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='products')
     price = models.DecimalField(max_digits=12, decimal_places=2)
+    lot_number = models.CharField(null=True, blank=True, max_length=20)
 
     @property
     def type(self):
@@ -73,3 +85,7 @@ class ProductDocument(models.Model):
 
     def calculate_value(self):
         return self.quantity * self.price
+
+
+class ProductTransfer(ProductDocument):
+    location_source = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='transfers')

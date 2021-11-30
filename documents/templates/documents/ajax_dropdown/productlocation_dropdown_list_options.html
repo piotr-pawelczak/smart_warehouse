@@ -1,4 +1,4 @@
 <option value="">---------</option>
 {% for product_location in locations %}
-    <option value="{{ product_location.location.id }}">nr partii: {{ product_location.lot_number }} {{ product_location.location.name }} ({{ product_location.quantity }} szt.)</option>
+    <option quantity="{{ product_location.quantity }}" value="{{ product_location.location.id }}" lot_number="{{ product_location.lot_number }}">{{ product_location.location.name }} ({{ product_location.lot_number }})</option>
 {% endfor %}

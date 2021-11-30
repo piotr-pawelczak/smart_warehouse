@@ -130,9 +130,31 @@ body {
     transition: .5s;
 }
 
-.grn-table tr .product_search {
+.grn-table tr .product_search, .gin-table tr .product_search {
     width: 300px;
 }
+
+.gin-table tr .location-select {
+    width: 250px;
+}
+
+td.quantity_information {
+    min-width: 150px !important;
+}
+
+.gin-table thead tr th .quantity {
+    min-width: 150px !important;
+}
+
+.gin-table .quantity-input {
+    min-width: 150px !important;
+}
+
+.gin-table .gin-price {
+    min-width: 190px !important;
+}
+
+
 
 .document_detail_link a {
     color: #0000aa;

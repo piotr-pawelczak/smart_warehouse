@@ -37,9 +37,16 @@
 
     {% if not document.confirmed %}
         <div class="row" style="width: 100%;">
-            <div class="col-lg-3 col-sm-6 col-6">
-                <a class="btn btn-warning" href="{% url "documents:goods_received_update" document.document_type|lower document.id %}" style="width: 100%;">Edytuj</a>
-            </div>
+            {% if document.document_type == 'WZ' or document.document_type == 'RW' %}
+                <div class="col-lg-3 col-sm-6 col-6">
+                    <a class="btn btn-warning" href="{% url "documents:goods_issue_update" document.document_type|lower document.id %}" style="width: 100%;">Edytuj</a>
+                </div>
+            {% else %}
+                <div class="col-lg-3 col-sm-6 col-6">
+                    <a class="btn btn-warning" href="{% url "documents:goods_received_update" document.document_type|lower document.id %}" style="width: 100%;">Edytuj</a>
+                </div>
+            {% endif %}
+
             <div class="col-lg-3 col-sm-6 col-6">
                 <form method="post" action="{% url "documents:document-delete" document.id %}" class="m-0 p-0">
                     {% csrf_token %}
@@ -51,7 +58,7 @@
         <div class="mb-4"></div>
     {% endif %}
 
-{% if document.document_type == 'PZ' %}
+{% if document.document_type == 'PZ' or document.document_type == 'WZ' %}
     <h4>Kontrahent</h4>
     <table class="table table-bordered warehouse_list_table mt-3" style="width: auto;">
                 <tr>
@@ -82,6 +89,9 @@
                     <th>L.p.</th>
                     <th>Produkt</th>
                     <th>SKU</th>
+                    {% if document.document_type == 'RW' or document.document_type == 'WZ' %}
+                        <th>Numer partii</th>
+                    {% endif %}
                     <th>Ilość</th>
                     <th>Cena jednostkowa [zł]</th>
                     <th>Lokalizacja</th>
@@ -94,6 +104,9 @@
                         <td>{{ forloop.counter }}</td>
                         <td class="document_detail_link"><a href="{{ product_document.product.get_absolute_url }}">{{ product_document.product.name }}</a></td>
                         <td>{{ product_document.product.sku }}</td>
+                        {% if document.document_type == 'RW' or document.document_type == 'WZ' %}
+                            <td>{{ product_document.lot_number }}</td>
+                        {% endif %}
                         <td>{{ product_document.quantity }}</td>
                         <td>{{ product_document.price }}</td>
                         <td class="document_detail_link"><a href="{{ product_document.location.get_absolute_url }}">{{ product_document.location }}</a></td>
@@ -104,6 +117,9 @@
                     <th></th>
                     <th></th>
                     <th></th>
+                    {% if document.document_type == 'RW' or document.document_type == 'WZ' %}
+                            <th></th>
+                    {% endif %}
                     <th></th>
                     <th></th>
                     <th></th>

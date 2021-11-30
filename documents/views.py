@@ -5,30 +5,127 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseNotFound
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse
-from django.utils.decorators import method_decorator
+# from django.urls import reverse
 
 from documents.forms import *
 from django.forms import inlineformset_factory
 from warehouse.models import ProductLocation, Warehouse, Shelf
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView
+from custom_functions.documents import generate_number, generate_form
 
 
-# Create your views here.
-def goods_issue_create(request):
-    document_type = 'GIN'
+# ----------------------------------------- Goods Issue Note Views -----------------------------------------------------
+
+@login_required
+def goods_issue_create(request, document_type):
+
+    if document_type not in ['wz', 'rw']:
+        return HttpResponseNotFound('<h1>Page not found</h1>')
+
+    document_number = generate_number(document_type)
+    ProductFormSet = inlineformset_factory(Document, ProductDocument, form=ProductDocumentIssueForm, extra=1,
+                                           can_delete=True)
+
     if request.method == 'POST':
-        form = GoodsIssueForm(request.POST)
-        form_product = ProductDocumentForm(document_type, request.POST)
-        if form.is_valid():
-            form.save()
-            form_product.save()
-    else:
-        form = GoodsIssueForm()
-        form_product = ProductDocumentForm(document_type)
+        form = generate_form(document_type, request.POST)
+        formset = ProductFormSet(request.POST)
+        if form.is_valid() and formset.is_valid():
+            new_document = form.save(commit=False)
+            new_document.document_number = document_number
+            new_document.user = request.user
+            new_document.save()
 
-    context = {'form': form, 'form_product': form_product, 'document_type': document_type}
-    return render(request, 'documents/create_document.html', context)
+            for product_form in formset:
+                new_product = product_form.save(commit=False)
+                new_product.document = new_document
+                new_product.save()
+
+                if new_document.confirmed:
+                    product_location = ProductLocation.objects.get(
+                        product=new_product.product,
+                        location=new_product.location,
+                        lot_number=new_product.lot_number
+                    )
+
+                    if new_product.quantity > product_location.quantity:
+                        messages.error(request, "Przekroczono dozwoloną ilość")
+                        return redirect(reverse("documents:goods_issue_create"))
+                    else:
+                        product_location.quantity -= new_product.quantity
+                        product_location.save()
+                        if not product_location.quantity:
+                            product_location.delete()
+
+            if new_document.confirmed:
+                messages.success(request, f'Pomyślnie utworzono dokument {document_number}.')
+            else:
+                messages.success(request, f'Pomyślnie utworzono wersję roboczą dokumentu.')
+            return redirect(reverse('documents:list'))
+    else:
+        form = generate_form(document_type)
+        formset = ProductFormSet()
+
+    context = {'form': form, 'document_number': document_number, 'formset': formset, 'document_type': document_type}
+    return render(request, 'documents/goods_issue_note/goods_issue_note_create.html', context)
+
+
+def goods_issue_update(request, document_type, pk):
+
+    if document_type not in ['wz', 'rw']:
+        return HttpResponseNotFound('<h1>Page not found</h1>')
+
+    document = Document.objects.get(id=pk)
+
+    if document_type == 'wz':
+        edit_form = GoodsIssueForm(instance=document)
+    else:
+        edit_form = InternalGoodsIssueForm(instance=document)
+
+    ProductFormSet = inlineformset_factory(Document, ProductDocument, form=ProductDocumentIssueForm, extra=0,
+                                           can_delete=True)
+    formset = ProductFormSet(instance=document)
+
+    if request.method == 'POST':
+        formset = ProductFormSet(request.POST, instance=document)
+
+        if document_type == 'wz':
+            edit_form = GoodsIssueForm(request.POST, instance=document)
+        else:
+            edit_form = InternalGoodsIssueForm(request.POST, instance=document)
+
+        if formset.is_valid() and edit_form.is_valid():
+            updated_document = edit_form.save()
+
+            for form in formset.forms:
+                if form.cleaned_data['DELETE']:
+                    product_document_id = form.cleaned_data['id'].id
+                    obj = ProductDocument.objects.get(id=product_document_id)
+                    obj.delete()
+                else:
+                    updated_product = form.save(commit=False)
+                    updated_product.document = updated_document
+                    updated_product.save()
+
+                    if updated_document.confirmed:
+                        product_location = ProductLocation.objects.get(
+                            product=updated_product.product,
+                            location=updated_product.location,
+                            lot_number=updated_product.lot_number
+                        )
+
+                        if updated_product.quantity > product_location.quantity:
+                            messages.error(request, "Przekroczono dozwoloną ilość")
+                            return redirect(reverse("documents:goods_issue_create"))
+                        else:
+                            product_location.quantity -= updated_product.quantity
+                            product_location.save()
+                            if not product_location.quantity:
+                                product_location.delete()
+
+            return redirect(reverse('documents:detail', args=[pk]))
+
+    context = {'document': document, 'edit_form': edit_form, 'formset': formset, 'document_type': document_type}
+    return render(request, 'documents/goods_issue_note/goods_issue_note_update.html', context)
 
 
 # ------------------------------------------ Goods Received Note Views -------------------------------------------------
@@ -36,45 +133,23 @@ def goods_issue_create(request):
 @login_required
 def goods_received_create(request, document_type):
 
-    # document_type = 'pw'
-
     if document_type not in ['pz', 'pw']:
         return HttpResponseNotFound('<h1>Page not found</h1>')
 
-    ProductFormSet = inlineformset_factory(Document, ProductDocument, form=ProductDocumentReceivedForm, extra=1, can_delete=True)
+    ProductFormSet = inlineformset_factory(Document, ProductDocument, form=ProductDocumentReceivedForm, extra=1,
+                                           can_delete=True)
 
-    year = datetime.datetime.now().year
     lot_number = datetime.datetime.now().strftime("%d/%m/%Y")
-
-    counter = 1
-    if document_type == 'pz':
-        if len(GoodsReceivedNote.objects.filter(created__year=year)) != 0:
-            latest_document = GoodsReceivedNote.objects.filter(created__year=year).order_by('-created')[0]
-            counter = int(latest_document.document_number.split('/')[2]) + 1
-        document_number = f'PZ/{year}/{counter}'
-    else:
-        if len(InternalGoodsReceivedNote.objects.filter(created__year=year)) != 0:
-            latest_document = InternalGoodsReceivedNote.objects.filter(created__year=year).order_by('-created')[0]
-            counter = int(latest_document.document_number.split('/')[2]) + 1
-        document_number = f'PW/{year}/{counter}'
+    document_number = generate_number(document_type)
 
     if request.method == 'POST':
-
-        if document_type == 'pz':
-            form = GoodsReceivedForm(request.POST)
-        else:
-            form = InternalGoodsReceivedForm(request.POST)
-
+        form = generate_form(document_type, request.POST)
         formset = ProductFormSet(request.POST, request.FILES)
+
         if form.is_valid() and formset.is_valid():
-
-            for cd in formset.cleaned_data:
-                if len(cd) == 0:
-                    messages.error(request, 'Poprawnie uzupełnij wszystkie pola. Jeżeli formularz dodawania produktu jest pusty, usuń go.')
-                    return redirect(f'/document/{document_type}')
-
             new_document = form.save(commit=False)
             new_document.document_number = document_number
+            new_document.user = request.user
             new_document.save()
 
             for product_form in formset.forms:
@@ -83,6 +158,10 @@ def goods_received_create(request, document_type):
                 new_product.save()
 
                 if new_document.confirmed:
+
+                    new_product.lot_number = lot_number
+                    new_product.save()
+
                     try:
                         product_location = ProductLocation.objects.get(
                             product=new_product.product,
@@ -100,9 +179,6 @@ def goods_received_create(request, document_type):
                             quantity=new_product.quantity
                         )
 
-            new_document.user = request.user
-            new_document.save()
-
             if new_document.confirmed:
                 messages.success(request, f'Pomyślnie utworzono dokument {document_number}.')
             else:
@@ -113,11 +189,7 @@ def goods_received_create(request, document_type):
                                     'pusty, usuń go.')
     else:
         formset = ProductFormSet()
-
-        if document_type == 'pz':
-            form = GoodsReceivedForm()
-        else:
-            form = InternalGoodsReceivedForm()
+        form = generate_form(document_type)
 
     context = {'formset': formset, 'form': form, 'document_number': document_number, 'document_type': document_type}
     return render(request,
@@ -126,8 +198,7 @@ def goods_received_create(request, document_type):
 
 @login_required
 def goods_received_notes_update(request, document_type, pk):
-    
-    # document_type = 'pw'
+
     if document_type not in ['pz', 'pw']:
         return HttpResponseNotFound('<h1>Page not found</h1>')
 
@@ -137,9 +208,11 @@ def goods_received_notes_update(request, document_type, pk):
     else:
         edit_form = InternalGoodsReceivedForm(instance=document)
 
-    ProductFormSet = inlineformset_factory(Document, ProductDocument, form=ProductDocumentReceivedForm, extra=0, can_delete=True)
+    ProductFormSet = inlineformset_factory(Document, ProductDocument, form=ProductDocumentReceivedForm, extra=0,
+                                           can_delete=True)
     shelves = [x.location.parent_shelf for x in document.products.all()]
     formset = ProductFormSet(instance=document)
+    lot_number = datetime.datetime.now().strftime("%d/%m/%Y")
 
     for i in range(len(formset.forms)):
         formset.forms[i].fields['shelf'].initial = shelves[i]
@@ -165,12 +238,33 @@ def goods_received_notes_update(request, document_type, pk):
                     updated_product.document = updated_document
                     updated_product.save()
 
+                    if updated_document.confirmed:
+                        try:
+                            product_location = ProductLocation.objects.get(
+                                product=updated_product.product,
+                                location=updated_product.location,
+                                lot_number=lot_number
+                            )
+                            product_location.quantity += updated_product.quantity
+                            product_location.save()
+
+                        except(Exception,):
+                            ProductLocation.objects.create(
+                                product=updated_product.product,
+                                location=updated_product.location,
+                                lot_number=lot_number,
+                                quantity=updated_product.quantity
+                            )
+
             return redirect(reverse('documents:detail', args=[pk]))
 
-    context = {'edit_form': edit_form, 'document_number': document.document_number, 'formset': formset, 'document_type': document_type}
+    context = {'edit_form': edit_form, 'document_number': document.document_number,
+               'formset': formset, 'document_type': document_type}
     return render(request,
                   'documents/goods_received_note/goods_received_note_update.html', context)
 
+
+# -------------------------------------- General documents views ------------------------------------------------------
 
 class DocumentListView(LoginRequiredMixin, ListView):
     template_name = 'documents/list.html'
@@ -185,10 +279,10 @@ class DocumentListView(LoginRequiredMixin, ListView):
         return queryset
 
 
-class DocumentDetailView(LoginRequiredMixin, DetailView):
-    model = Document
-    context_object_name = 'document'
-    template_name = 'documents/detail.html'
+def document_detail(request, pk):
+    document = Document.objects.get(id=pk)
+    context = {'document': document}
+    return render(request, 'documents/detail.html', context)
 
 
 def document_delete(request, pk):
@@ -201,10 +295,21 @@ def document_delete(request, pk):
 
 # ----------------------------------- Functions to handle AJAX form refresh --------------------------------------------
 
+def load_warehouse_products(request):
+    warehouse_id = request.GET.get('warehouse')
+    products = Warehouse.objects.get(id=warehouse_id).get_available_products()
+    return render(request, 'documents/ajax_dropdown/warehouse_products_list_dropdown.html', {'products': products})
+
+
 def load_product_locations(request):
     product_id = request.GET.get('product')
-    locations = Product.objects.get(id=product_id).locations.filter(is_active=True)
-    return render(request, 'documents/ajax_dropdown/productlocation_dropdown_list_options.html', {'locations': locations})
+    warehouse_id = request.GET.get('warehouse_product')
+    locations = Product.objects.get(id=product_id).locations.filter(location__parent_shelf__warehouse_id=warehouse_id,
+                                                                    location__is_active=True,
+                                                                    location__parent_shelf__is_active=True
+                                                                    )
+    context = {'locations': locations}
+    return render(request, 'documents/ajax_dropdown/productlocation_dropdown_list_options.html', context)
 
 
 def load_shelves(request):
@@ -262,4 +367,3 @@ def contractor_update(request, pk):
 
     context = {'edit_form': edit_form}
     return render(request, 'documents/update_contractor.html', context)
-
