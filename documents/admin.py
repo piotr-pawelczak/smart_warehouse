@@ -10,6 +10,11 @@ class ProductDocumentInline(admin.TabularInline):
     raw_id_fields = ['product']
 
 
+class ProductTransferInline(admin.TabularInline):
+    model = ProductTransfer
+    raw_id_fields = ['product']
+
+
 # Admin WZ
 @admin.register(GoodsIssueNote)
 class GoodsIssueNoteAdmin(PolymorphicChildModelAdmin):
@@ -40,17 +45,28 @@ class InternalGoodsReceivedNoteAdmin(PolymorphicChildModelAdmin):
     list_display = ['document_number', 'confirmed', 'created']
 
 
+# Admin MM-
 @admin.register(InterBranchTransferMinus)
 class InterBranchTransferMinusAdmin(PolymorphicChildModelAdmin):
     base_model = InternalGoodsReceivedNote
-    inlines = [ProductDocumentInline]
+    inlines = [ProductTransferInline]
     list_display = ['document_number', 'confirmed', 'created']
+
+
+# Admin MM+
+@admin.register(InterBranchTransferPlus)
+class InterBranchTransferMinusAdmin(PolymorphicChildModelAdmin):
+    base_model = InterBranchTransferPlus
+    inlines = [ProductTransferInline]
+    list_display = ['document_number', 'confirmed', 'created']
+
 
 # Admin general document
 @admin.register(Document)
 class DocumentAdmin(PolymorphicParentModelAdmin):
     base_model = Document
-    child_models = (GoodsIssueNote, InternalGoodsIssueNote, GoodsReceivedNote, InternalGoodsReceivedNote, InterBranchTransferMinus)
+    child_models = (GoodsIssueNote, InternalGoodsIssueNote, GoodsReceivedNote, InternalGoodsReceivedNote,
+                    InterBranchTransferMinus, InterBranchTransferPlus)
     list_display = ['document_number', 'confirmed', 'created']
 
 

@@ -19,7 +19,8 @@
             </tr>
         </thead>
         <tbody>
-            {% for productdocument in warehouse.get_history %}
+            {% for productdocument in warehouse.get_order_history %}
+                {{ productdocument.document.get_target_warehouse }}
                 <tr>
                     <td><a href="{{ productdocument.product.get_absolute_url }}" class="document_link" target="_blank">{{ productdocument.product.name }}</a></td>
                     <td>{{ productdocument.product.sku }}</td>
@@ -27,7 +28,7 @@
 
                     {% if productdocument.type in received_type %}
                         <td style="color: green; font-weight: bold;">+{{ productdocument.quantity }}</td>
-                    {% else %}
+                    {% elif productdocument.type in shipped_type %}
                         <td style="color: red; font-weight: bold;">-{{ productdocument.quantity }}</td>
                     {% endif %}
 
@@ -40,6 +41,45 @@
     </div>
 
     <h3>Przesunięcia międzymagazynowe</h3>
+    <table id="transferTable" class="table table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>Produkt</th>
+                <th>SKU</th>
+                <th>Data</th>
+                <th>Ilość</th>
+                <th>Z magazynu</th>
+                <th>Do magazynu</th>
+                <th>Dokument</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for productdocument in warehouse.get_transfer_history %}
+                <tr>
+                    <td><a href="{{ productdocument.product.get_absolute_url }}" class="document_link" target="_blank">{{ productdocument.product.name }}</a></td>
+                    <td>{{ productdocument.product.sku }}</td>
+                    <td>{{ productdocument.document.created }}</td>
+
+                    {% if productdocument.type == 'MM+' %}
+                        <td style="color: green; font-weight: bold;">+{{ productdocument.quantity }}</td>
+                    {% else %}
+                        <td style="color: red; font-weight: bold;">-{{ productdocument.quantity }}</td>
+                    {% endif %}
+
+                    {% if productdocument.type == 'MM+' %}
+                        <td><a href="{{ productdocument.document.source_warehouse }}" class="document_link" target="_blank">{{ productdocument.document.source_warehouse }}</a></td>
+                        <td><a href="{{ productdocument.document.warehouse }}" class="document_link" target="_blank">{{ productdocument.document.warehouse }}</a></td>
+                    {% elif productdocument.type == 'MM-' %}
+                        <td><a href="{{ productdocument.document.warehouse }}" class="document_link" target="_blank">{{ productdocument.document.warehouse }}</a></td>
+                        <td><a href="{{ productdocument.document.target_warehouse }}" class="document_link" target="_blank">{{ productdocument.document.target_warehouse }}</a></td>
+                    {% endif %}
+                    <td><a href="{{ productdocument.document.get_absolute_url }}" class="document_link" target="_blank">{{ productdocument.document.document_number }}</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+    <div class="mt-4"></div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
     <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
@@ -47,6 +87,10 @@
     <script>
         $(document).ready(function() {
             $('#example').DataTable({
+                sort: true,
+                "order": [[2, 'desc']]
+            });
+            $('#transferTable').DataTable({
                 sort: true,
                 "order": [[2, 'desc']]
             });

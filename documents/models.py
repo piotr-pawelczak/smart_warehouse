@@ -42,6 +42,27 @@ class Document(PolymorphicModel):
             value += document_product.calculate_value()
         return value
 
+    @property
+    def get_source_warehouse(self):
+        if InterBranchTransferPlus.objects.get(id=self.id):
+            print('MM+')
+            return InterBranchTransferPlus.objects.get(id=self.id).source_warehouse
+        elif InterBranchTransferMinus.objects.get(id=self.id):
+            print('MM-')
+            return InterBranchTransferMinus.objects.get(id=self.id).warehouse
+        else:
+            print('else')
+            return None
+
+    @property
+    def get_target_warehouse(self):
+        if InterBranchTransferPlus.objects.get(id=self.id):
+            return InterBranchTransferPlus.objects.get(id=self.id).warehouse
+        elif InterBranchTransferMinus.objects.get(id=self.id):
+            return InterBranchTransferMinus.objects.get(id=self.id).target_warehouse
+        else:
+            return None
+
 
 class GoodsReceivedNote(Document):
     contractor = models.ForeignKey(Contractor, on_delete=models.SET_NULL, null=True)
@@ -86,6 +107,13 @@ class ProductDocument(models.Model):
     def calculate_value(self):
         return self.quantity * self.price
 
+    @property
+    def target_location(self):
+        if ProductTransfer.objects.get(id=self.id):
+            return ProductTransfer.objects.get(id=self.id).location_target
+        else:
+            return None
+
 
 class ProductTransfer(ProductDocument):
-    location_source = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='transfers')
+    location_target = models.ForeignKey(Location, on_delete=models.CASCADE)

@@ -5,13 +5,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseNotFound
 from django.shortcuts import render, redirect, get_object_or_404
-# from django.urls import reverse
+import copy
 
 from documents.forms import *
 from django.forms import inlineformset_factory
 from warehouse.models import ProductLocation, Warehouse, Shelf
 from django.views.generic import ListView
-from custom_functions.documents import generate_number, generate_form
+from custom_functions.documents import generate_number, generate_form, add_quantity, remove_quantity, \
+    add_quantity_transfer, remove_quantity_transfer
 
 
 # ----------------------------------------- Goods Issue Note Views -----------------------------------------------------
@@ -41,20 +42,7 @@ def goods_issue_create(request, document_type):
                 new_product.save()
 
                 if new_document.confirmed:
-                    product_location = ProductLocation.objects.get(
-                        product=new_product.product,
-                        location=new_product.location,
-                        lot_number=new_product.lot_number
-                    )
-
-                    if new_product.quantity > product_location.quantity:
-                        messages.error(request, "Przekroczono dozwoloną ilość")
-                        return redirect(reverse("documents:goods_issue_create"))
-                    else:
-                        product_location.quantity -= new_product.quantity
-                        product_location.save()
-                        if not product_location.quantity:
-                            product_location.delete()
+                    remove_quantity(request, new_product)
 
             if new_document.confirmed:
                 messages.success(request, f'Pomyślnie utworzono dokument {document_number}.')
@@ -107,20 +95,7 @@ def goods_issue_update(request, document_type, pk):
                     updated_product.save()
 
                     if updated_document.confirmed:
-                        product_location = ProductLocation.objects.get(
-                            product=updated_product.product,
-                            location=updated_product.location,
-                            lot_number=updated_product.lot_number
-                        )
-
-                        if updated_product.quantity > product_location.quantity:
-                            messages.error(request, "Przekroczono dozwoloną ilość")
-                            return redirect(reverse("documents:goods_issue_create"))
-                        else:
-                            product_location.quantity -= updated_product.quantity
-                            product_location.save()
-                            if not product_location.quantity:
-                                product_location.delete()
+                        remove_quantity(request, updated_product)
 
             return redirect(reverse('documents:detail', args=[pk]))
 
@@ -158,26 +133,7 @@ def goods_received_create(request, document_type):
                 new_product.save()
 
                 if new_document.confirmed:
-
-                    new_product.lot_number = lot_number
-                    new_product.save()
-
-                    try:
-                        product_location = ProductLocation.objects.get(
-                            product=new_product.product,
-                            location=new_product.location,
-                            lot_number=lot_number
-                        )
-                        product_location.quantity += new_product.quantity
-                        product_location.save()
-
-                    except(Exception,):
-                        ProductLocation.objects.create(
-                            product=new_product.product,
-                            location=new_product.location,
-                            lot_number=lot_number,
-                            quantity=new_product.quantity
-                        )
+                    add_quantity(new_product, lot_number)
 
             if new_document.confirmed:
                 messages.success(request, f'Pomyślnie utworzono dokument {document_number}.')
@@ -239,22 +195,7 @@ def goods_received_notes_update(request, document_type, pk):
                     updated_product.save()
 
                     if updated_document.confirmed:
-                        try:
-                            product_location = ProductLocation.objects.get(
-                                product=updated_product.product,
-                                location=updated_product.location,
-                                lot_number=lot_number
-                            )
-                            product_location.quantity += updated_product.quantity
-                            product_location.save()
-
-                        except(Exception,):
-                            ProductLocation.objects.create(
-                                product=updated_product.product,
-                                location=updated_product.location,
-                                lot_number=lot_number,
-                                quantity=updated_product.quantity
-                            )
+                        add_quantity(updated_product, lot_number)
 
             return redirect(reverse('documents:detail', args=[pk]))
 
@@ -264,7 +205,126 @@ def goods_received_notes_update(request, document_type, pk):
                   'documents/goods_received_note/goods_received_note_update.html', context)
 
 
-# -------------------------------------- General documents views ------------------------------------------------------
+# ------------------------------------------ Interbranch Transfer Views ------------------------------------------------
+
+def interbranch_transfer_create(request):
+
+    document_type = 'mm-'
+    document_number = generate_number(document_type)
+
+    ProductFormSet = inlineformset_factory(Document, ProductTransfer, form=ProductTransferForm, extra=1,
+                                           can_delete=True)
+
+    if request.method == 'POST':
+        form = InterBranchTransferMinusForm(request.POST)
+        formset = ProductFormSet(request.POST)
+
+        if form.is_valid() and formset.is_valid():
+            new_document = form.save(commit=False)
+            new_document.document_number = document_number
+            new_document.user = request.user
+            new_document.save()
+
+            for product_form in formset:
+                new_product = product_form.save(commit=False)
+                new_product.document = new_document
+                new_product.save()
+
+                if new_document.confirmed:
+                    add_quantity_transfer(new_product)
+                    remove_quantity_transfer(request, new_product)
+
+            if new_document.confirmed:
+                new_transfer_plus = InterBranchTransferPlus.objects.create(
+                    document_number=generate_number('mm+'),
+                    confirmed=True,
+                    warehouse=new_document.target_warehouse,
+                    source_warehouse=new_document.warehouse,
+                    user=new_document.user
+                )
+
+                transfer_minus_products = [elem.id for elem in new_document.products.all()]
+                transfer_plus_products = ProductTransfer.objects.filter(id__in=transfer_minus_products)
+
+                for product_transfer in transfer_plus_products:
+                    ProductTransfer.objects.create(
+                        product=product_transfer.product,
+                        location=product_transfer.location,
+                        quantity=product_transfer.quantity,
+                        price=product_transfer.price,
+                        lot_number=product_transfer.lot_number,
+                        location_target=product_transfer.location_target,
+                        document=new_transfer_plus
+                    )
+
+            return redirect(reverse('documents:list'))
+    else:
+        form = InterBranchTransferMinusForm()
+        formset = ProductFormSet()
+
+    context = {'document_number': document_number, 'form': form, 'formset': formset}
+    return render(request, 'documents/interbranch_transfer/interbranch_transfer_create.html', context)
+
+
+def interbranch_transfer_update(request, pk):
+    document = InterBranchTransferMinus.objects.get(id=pk)
+    edit_form = InterBranchTransferMinusForm(instance=document)
+    ProductFormSet = inlineformset_factory(Document, ProductTransfer, form=ProductTransferForm, can_delete=True, extra=0)
+    formset = ProductFormSet(instance=document)
+
+    if request.method == 'POST':
+        formset = ProductFormSet(request.POST, instance=document)
+        edit_form = InterBranchTransferMinusForm(request.POST, instance=document)
+
+        if edit_form.is_valid() and formset.is_valid():
+            updated_document = edit_form.save()
+
+            for form in formset.forms:
+                if form.cleaned_data['DELETE']:
+                    product_document_id = form.cleaned_data['id'].id
+                    obj = ProductDocument.objects.get(id=product_document_id)
+                    obj.delete()
+                else:
+                    updated_product = form.save(commit=False)
+                    updated_product.document = updated_document
+                    updated_product.save()
+
+                    if updated_document.confirmed:
+                        add_quantity_transfer(updated_product)
+                        remove_quantity_transfer(request, updated_product)
+
+            if updated_document.confirmed:
+                new_transfer_plus = InterBranchTransferPlus.objects.create(
+                    document_number=generate_number('mm+'),
+                    confirmed=True,
+                    warehouse=updated_document.target_warehouse,
+                    source_warehouse=updated_document.warehouse,
+                    user=updated_document.user
+                )
+
+                transfer_minus_products = [elem.id for elem in updated_document.products.all()]
+                transfer_plus_products = ProductTransfer.objects.filter(id__in=transfer_minus_products)
+
+                for product_transfer in transfer_plus_products:
+                    ProductTransfer.objects.create(
+                        product=product_transfer.product,
+                        location=product_transfer.location,
+                        quantity=product_transfer.quantity,
+                        price=product_transfer.price,
+                        lot_number=product_transfer.lot_number,
+                        location_target=product_transfer.location_target,
+                        document=new_transfer_plus
+                    )
+        else:
+            print(formset.errors)
+
+        return redirect("documents:list")
+
+    context = {'document': document, 'edit_form': edit_form, 'formset': formset}
+    return render(request, 'documents/interbranch_transfer/interbranch_transfer_update.html', context)
+
+
+# -------------------------------------- General documents views -------------------------------------------------------
 
 class DocumentListView(LoginRequiredMixin, ListView):
     template_name = 'documents/list.html'
@@ -281,7 +341,13 @@ class DocumentListView(LoginRequiredMixin, ListView):
 
 def document_detail(request, pk):
     document = Document.objects.get(id=pk)
-    context = {'document': document}
+    transfer_products = ProductTransfer.objects.none()
+
+    if document.document_type in ['MM+', 'MM-']:
+        products_ids = [elem.id for elem in document.products.all()]
+        transfer_products = ProductTransfer.objects.filter(id__in=products_ids)
+
+    context = {'document': document, 'transfer_products': transfer_products}
     return render(request, 'documents/detail.html', context)
 
 
@@ -321,6 +387,12 @@ def load_shelves(request):
 def load_locations(request):
     shelf_id = request.GET.get('shelf')
     locations = Shelf.objects.get(id=shelf_id).locations.filter(is_active=True)
+    return render(request, 'documents/ajax_dropdown/locations_dropdown_list_options.html', {'locations': locations})
+
+
+def load_target_locations(request):
+    warehouse_id = request.GET.get('target-warehouse')
+    locations = Location.objects.filter(parent_shelf__warehouse_id=warehouse_id)
     return render(request, 'documents/ajax_dropdown/locations_dropdown_list_options.html', {'locations': locations})
 
 

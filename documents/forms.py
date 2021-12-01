@@ -45,6 +45,13 @@ class InternalGoodsReceivedForm(forms.ModelForm):
         self.fields['warehouse'].queryset = Warehouse.objects.filter(is_active=True)
 
 
+class InterBranchTransferMinusForm(forms.ModelForm):
+
+    class Meta:
+        model = InterBranchTransferMinus
+        fields = ['confirmed', 'warehouse', 'target_warehouse']
+
+
 class ProductDocumentReceivedForm(forms.ModelForm):
 
     shelf = forms.ModelChoiceField(queryset=Shelf.objects.all())
@@ -124,12 +131,34 @@ class ProductDocumentIssueForm(forms.ModelForm):
             self.fields['location'].queryset = Location.objects.all()
 
 
+class ProductTransferForm(ProductDocumentIssueForm):
+    class Meta:
+        model = ProductTransfer
+        exclude = ()
+    
+    def __init__(self, *args, **kwargs):
+        super(ProductTransferForm, self).__init__(*args, **kwargs)
+        self.fields['location_target'].queryset = Location.objects.none()
+
+        if 'target-warehouse' in self.data:
+            try:
+                warehouse_id = int(self.data.get('target-warehouse'))
+                self.fields['location_target'].queryset = Location.objects.filter(parent_shelf__warehouse_id=warehouse_id, is_active=True, parent_shelf__is_active=True)
+            except (ValueError, TypeError):
+                pass
+        elif self.instance.id:
+            warehouse_id = self.instance.location_target.parent_shelf.warehouse.id
+            self.fields['location_target'].queryset = Location.objects.filter(parent_shelf__warehouse_id=warehouse_id, is_active=True, parent_shelf__is_active=True)
+
+        if self.is_bound:
+            self.fields['location_target'].queryset = Location.objects.filter(is_active=True)
+
+
 class ContractorForm(forms.ModelForm):
     class Meta:
         model = Contractor
         exclude = ()
-
         labels = {'name': 'Nazwa', 'address': 'Adres', 'phone_number': 'Numer telefonu'}
-
+    
 
 

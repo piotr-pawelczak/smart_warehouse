@@ -4,6 +4,7 @@ from django.core.validators import MinValueValidator
 from django.utils.text import slugify
 from custom_functions.accents import remove_accents
 import datetime
+import documents.models as docs
 
 # Create your models here.
 
@@ -67,8 +68,18 @@ class Warehouse(models.Model):
 
         return products_queryset
 
-    def get_history(self):
+    def get_order_history(self):
         documents = self.documents.all()
+        received_issue_ids = [doc.id for doc in documents if doc.document_type in ['PZ', 'PW', 'WZ', 'RW']]
+        documents = docs.Document.objects.filter(id__in=received_issue_ids)
+        product_documents = [x.products.all() for x in documents if x.confirmed]
+        products_flat = [product for queryset in product_documents for product in queryset]
+        return products_flat
+
+    def get_transfer_history(self):
+        documents = self.documents.all()
+        transfer_ids = [doc.id for doc in documents if doc.document_type in ['MM+', 'MM-']]
+        documents = docs.Document.objects.filter(id__in=transfer_ids)
         product_documents = [x.products.all() for x in documents if x.confirmed]
         products_flat = [product for queryset in product_documents for product in queryset]
         return products_flat

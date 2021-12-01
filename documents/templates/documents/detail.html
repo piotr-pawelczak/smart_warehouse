@@ -8,10 +8,23 @@
                     <th>Numer dokumentu</th>
                     <td>{{ document.document_number }}</td>
                 </tr>
-                <tr>
-                    <th>Magazyn</th>
-                    <td class="document_detail_link"><a href="{{ document.warehouse.get_absolute_url }}">{{ document.warehouse }}</a></td>
-                </tr>
+
+                {% if document.document_type == 'MM+' %}
+                    <tr>
+                        <th>Magazyn źródłowy</th>
+                        <td class="document_detail_link"><a href="{{ document.source_warehouse.get_absolute_url }}">{{ document.source_warehouse }}</a></td>
+                    </tr>
+                    <tr>
+                        <th>Magazyn docelowy</th>
+                        <td class="document_detail_link"><a href="{{ document.warehouse.get_absolute_url }}">{{ document.warehouse }}</a></td>
+                    </tr>
+                {% elif document.document_type == 'MM-'   %}
+                {% else %}
+                    <tr>
+                        <th>Magazyn</th>
+                        <td class="document_detail_link"><a href="{{ document.warehouse.get_absolute_url }}">{{ document.warehouse }}</a></td>
+                    </tr>
+                {% endif %}
                 <tr>
                     <th>Wystawca</th>
                     {% if document.user %}
@@ -41,9 +54,13 @@
                 <div class="col-lg-3 col-sm-6 col-6">
                     <a class="btn btn-warning" href="{% url "documents:goods_issue_update" document.document_type|lower document.id %}" style="width: 100%;">Edytuj</a>
                 </div>
-            {% else %}
+            {% elif document.document_type == 'PZ' or document.document_type == 'PW' %}
                 <div class="col-lg-3 col-sm-6 col-6">
                     <a class="btn btn-warning" href="{% url "documents:goods_received_update" document.document_type|lower document.id %}" style="width: 100%;">Edytuj</a>
+                </div>
+            {% else %}
+                <div class="col-lg-3 col-sm-6 col-6">
+                    <a class="btn btn-warning" href="{% url "documents:interbranch_transfer_update"  document.id %}" style="width: 100%;">Edytuj</a>
                 </div>
             {% endif %}
 
@@ -89,12 +106,21 @@
                     <th>L.p.</th>
                     <th>Produkt</th>
                     <th>SKU</th>
-                    {% if document.document_type == 'RW' or document.document_type == 'WZ' %}
+
+                    {% if document.document_type == 'RW' or document.document_type == 'WZ' or document.document_type == 'MM+' or document.document_type == 'MM-' %}
                         <th>Numer partii</th>
                     {% endif %}
+
                     <th>Ilość</th>
                     <th>Cena jednostkowa [zł]</th>
-                    <th>Lokalizacja</th>
+
+                    {% if document.document_type == 'MM+' or document.document_type == 'MM-' %}
+                        <th>Lokalizacja źródłowa</th>
+                        <th>Lokalizacja docelowa</th>
+                    {% else %}
+                        <th>Lokalizacja</th>
+                    {% endif %}
+
                     <th>Cena [zł]</th>
                 </tr>
             </thead>
@@ -104,12 +130,21 @@
                         <td>{{ forloop.counter }}</td>
                         <td class="document_detail_link"><a href="{{ product_document.product.get_absolute_url }}">{{ product_document.product.name }}</a></td>
                         <td>{{ product_document.product.sku }}</td>
-                        {% if document.document_type == 'RW' or document.document_type == 'WZ' %}
+
+                        {% if document.document_type == 'RW' or document.document_type == 'WZ' or document.document_type == 'MM+' or document.document_type == 'MM-' %}
                             <td>{{ product_document.lot_number }}</td>
                         {% endif %}
+
                         <td>{{ product_document.quantity }}</td>
                         <td>{{ product_document.price }}</td>
-                        <td class="document_detail_link"><a href="{{ product_document.location.get_absolute_url }}">{{ product_document.location }}</a></td>
+
+                        {% if document.document_type == 'MM+' or document.document_type == 'MM-' %}
+                            <td class="document_detail_link"><a href="{{ product_document.location.get_absolute_url }}">{{ product_document.location }}</a></td>
+                            <td class="document_detail_link"><a href="{{ product_document.location_target.get_absolute_url }}">{{ product_document.target_location }}</a></td>
+                        {% else %}
+                            <td class="document_detail_link"><a href="{{ product_document.location.get_absolute_url }}">{{ product_document.location }}</a></td>
+                        {% endif %}
+
                         <td>{{ product_document.calculate_value }}</td>
                     </tr>
                 {% endfor %}
@@ -117,7 +152,10 @@
                     <th></th>
                     <th></th>
                     <th></th>
-                    {% if document.document_type == 'RW' or document.document_type == 'WZ' %}
+                    {% if document.document_type == 'RW' or document.document_type == 'WZ' or document.document_type == 'MM+' or document.document_type == 'MM-' %}
+                            <th></th>
+                    {% endif %}
+                    {% if document.document_type == 'MM+' or document.document_type == 'MM-' %}
                             <th></th>
                     {% endif %}
                     <th></th>

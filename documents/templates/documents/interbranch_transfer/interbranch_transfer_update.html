@@ -4,44 +4,36 @@
 {% load crispy_forms_filters %}
 
 {% block title %}
-    {% if document_type == 'wz' %}
-        Edytuj wydanie zewnętrzne
-    {% else %}
-        Edytuj rozchód wewnętrzny
-    {% endif %}
+    Edycja przesunięcia międzymagazynowego
 {% endblock %}
 
 {% block content %}
-    {% if document_type == 'wz' %}
-        <h1>Edytuj wydanie zewnętrzne</h1>
-    {% else %}
-        <h1>Edytuj rozchód wewnętrzny</h1>
-    {% endif %}
+    <h1>Edycja przesunięcia międzymagazynowego</h1>
 
     <div class="card bg-light text-black my-3" style="position: relative; z-index: -1;">
-        <div class="card-body">Numer dokumentu: {{ document.document_number }}</div>
+        <div class="card-body">Numer dokumentu: {{ document }}</div>
     </div>
 
-    <form method="post" id="documentForm" warehouse-url="{% url "documents:ajax_load_warehouse_products" %}" product-url="{% url "documents:ajax_load_product_locations" %}">
+    <form method="post" id="documentForm" warehouse-url="{% url "documents:ajax_load_warehouse_products" %}"
+          product-url="{% url "documents:ajax_load_product_locations" %}" location-target-url="{% url "documents:ajax_load_target_locations" %}">
         {% csrf_token %}
 
-        {% if document_type == 'wz' %}
-            <label>Kontrahent</label>
-            {{ edit_form.contractor|add_class:"form-control" }}
-        {% endif %}
-
-        <label>Magazyn</label>
+        <label>Magazyn źródłowy</label>
         {{ edit_form.warehouse|add_class:"form-control" }}
+
+        <label class="mt-2">Magazyn docelowy</label>
+        {{ edit_form.target_warehouse|add_class:"form-control" }}
 
         <div class="table-responsive">
             <table class="table mt-3 gin-table">
                 <thead>
                     <tr>
                         <th class="product-table-grn">Produkt</th>
-                        <th class="count-table-grn">Lokalizacja</th>
-                        <th class="quantity">Stan</th>
-                        <th class="quantity-input-label">Ilość</th>
-                        <th class="gin-price">Cena jednostkowa</th>
+                        <th class="product-table-grn">Skąd</th>
+                        <th class="product-table-grn">Stan</th>
+                        <th class="product-table-grn">Dokąd</th>
+                        <th class="product-table-grn">Ilość</th>
+                        <th class="product-table-grn">Cena</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -50,21 +42,23 @@
                         <tr id="formTemplate">
                             <td>
                                 {{ product_form.id }}
+                                {{ product_form.productdocument_ptr }}
                                 {% if product_form.instance.pk %}{{ product_form.DELETE }}{% endif %}
                                 {{ product_form.product|add_class:"product_search form-control product-select select2-field"}}
                             </td>
                             <td>{{ product_form.location|add_class:"form-control location-select" }}</td>
                             <td class="quantity_information "><span style="line-height: 38px;">-</span></td>
+                            <td>{{ product_form.location_target|add_class:"form-control location-target-select" }}</td>
                             <td>{{ product_form.quantity|add_class:"form-control quantity-input" }}</td>
                             <td>
-                                <div class="input-group mb-3">
+                                <div class="input-group mb-3 price-transfer">
                                   {{ product_form.price|add_class:"form-control" }}
                                   <div class="input-group-append">
                                     <span class="input-group-text" id="basic-addon2">zł</span>
                                   </div>
                                 </div>
                             </td>
-                            <td>{{ product_form.lot_number.as_hidden}}</td>
+                            <td class="lot-number">{{ product_form.lot_number.as_hidden}}</td>
                             <td></td>
                         </tr>
                     {% endfor %}
@@ -124,7 +118,7 @@
         });
     </script>
 
-    <script src="{% static 'js/reset_new_form_choices_issue.js' %}"></script>
+    <script src="{% static 'js/reset_new_choices_transfer.js' %}"></script>
     <script src="{% static 'js/update_choices_transfer.js' %}"></script>
     <script src="{% static 'js/select2.min.js' %}"></script>
 
@@ -133,10 +127,14 @@
             $(".product_search").select2({
                 placeholder: 'Wybierz produkt'
             });
+            $(".location-target-select").select2({
+                placeholder: 'Wybierz lokalizację'
+            });
         });
     </script>
 
     <script>
+
         $('body').on('submit', '#documentForm', function () {
             let quantityInputs = $('.quantity-input');
             let locationInputs = $('.location-select');
@@ -153,23 +151,39 @@
                     return false;
                 }
             }
+
+            let warehouse1_id = $('#id_warehouse').val();
+            let warehouse2_id = $('#id_target_warehouse').val();
+
+            if(warehouse1_id === warehouse2_id) {
+                swal({
+                        title: 'Niepoprawny magazyn',
+                        text: 'Magazyn docelowy jest taki sam jak magazyn źródłowy',
+                        icon: 'error'
+                    });
+                return false;
+            }
+
         })
     </script>
 
-    <script>
-    $( document ).ready(function() {
+     <script>
+        $( document ).ready(function() {
         let product_choices = $('.select2-field')
         let location_inputs = $('.location-select');
+        let location_target_inputs = $('.location-target-select');
         for (let i = 0; i < product_choices.length; i++) {
             let location_choice = $("option:selected", location_inputs[i]).val();
+            let location_target_choice = $("option:selected", location_target_inputs[i]).val();
             $(product_choices[i]).trigger("change");
             setTimeout(function (){
                 $(location_inputs[i]).val(location_choice).trigger("change");
+                $(location_target_inputs[i]).val(location_target_choice).trigger("change");
                 let limit = parseInt($("option:selected", location_inputs[i]).attr("quantity"));
                 let quantity_td = $(location_inputs[i]).closest("td").next();
                 quantity_td.html("<span style=\"line-height: 38px;\">" + limit.toString() + " szt." + "</span>");
             }, 100);
          }
-    });
+        });
     </script>
 {% endblock %}

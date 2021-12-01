@@ -135,7 +135,7 @@ body {
 }
 
 .gin-table tr .location-select {
-    width: 250px;
+    width: 200px;
 }
 
 td.quantity_information {
@@ -154,6 +154,14 @@ td.quantity_information {
     min-width: 190px !important;
 }
 
+.gin-table .location-target-select {
+    min-width: 150px !important;
+}
+
+
+.gin-table .price-transfer {
+    min-width: 190px !important;
+}
 
 
 .document_detail_link a {

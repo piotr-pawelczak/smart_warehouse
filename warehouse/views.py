@@ -268,8 +268,8 @@ def warehouse_documents(request, slug):
 @login_required
 def warehouse_history(request, slug):
     warehouse = Warehouse.objects.get(slug=slug)
-    received_type = ['PZ', 'PW', 'MM+']
-    shipped_type = ['WZ', 'WW', 'MM-']
+    received_type = ['PZ', 'PW']
+    shipped_type = ['WZ', 'WW']
 
     context = {'warehouse': warehouse, 'received_type': received_type, 'shipped_type': shipped_type}
     return render(request, 'warehouse/locations/warehouse_history.html', context)
