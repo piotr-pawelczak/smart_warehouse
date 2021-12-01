@@ -1,0 +1,124 @@
+{% extends "warehouse/base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+{% load crispy_forms_filters %}
+
+{% block title %}Zmiana lokalizacji{% endblock %}
+
+{% block content %}
+    <h1>Zmiana lokalizacji</h1>
+
+    <form method="post" id="documentForm" warehouse-url="{% url "documents:ajax_load_warehouse_products" %}" product-url="{% url "documents:ajax_load_product_locations" %}"
+          location-url="{% url "documents:ajax_load_target_locations" %}">
+        {% csrf_token %}
+
+        <label class="mt-2">Magazyn</label>
+        {{ form.warehouse|add_class:"form-control" }}
+
+        <div>
+            <label class="mt-2">Produkt</label>
+            {{ form.product|add_class:"form-control product-select" }}
+        </div>
+
+        <label class="mt-2">Lokalizacja źródłowa</label>
+        {{ form.source_location|add_class:"form-control location-source-select" }}
+
+        <label class="mt-2">Lokalizacja docelowa</label>
+        {{ form.target_location|add_class:"form-control location-target-select" }}
+
+        <label class="mt-2">Dostępna ilość</label>
+        <div class="quantity-info">-</div>
+
+        <label class="mt-2">Ilość</label>
+        {{ form.quantity|add_class:"form-control" }}
+
+        {{ form.lot_number.as_hidden }}
+
+        <input type="submit" value="Zmień lokalizację" class="btn btn-success mt-2" id="btn-submit">
+    </form>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="{% static 'js/select2.min.js' %}"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+    <script>
+        document.body.addEventListener('change', function (event) {
+            if(event.target.id === 'id_warehouse'){
+                var url = $("#documentForm").attr("warehouse-url");
+                var url_location = $("#documentForm").attr("location-url");
+                var warehouseId = $('#id_warehouse').val();
+
+                $.ajax({
+                    url: url,
+                    data: {
+                        'warehouse': warehouseId
+                    },
+                    success: function (data) {
+                        $('.product-select').html(data);
+                    }
+                });
+
+                $.ajax({
+                    url: url_location,
+                    data: {
+                        'target-warehouse': warehouseId
+                    },
+                    success: function (data) {
+                        $('.location-target-select').html(data);
+                        $('.location-source-select').html("<option>--------</option>");
+                    }
+                });
+            }
+            if(event.target.id === 'id_source_location') {
+                let limit = parseInt($("option:selected", '.location-source-select').attr("quantity"));
+                let lot_number = $("option:selected", '.location-source-select').attr("lot_number");
+
+                $('.quantity-info').html(limit + "szt.")
+                $('#id_lot_number').val(lot_number);
+            }
+        });
+
+        $(document.body).on("change", ".product-select", function () {
+           if(this.id === 'id_product') {
+                let url = $("#documentForm").attr("product-url");
+                let productId = $("#id_product").val();
+                let warehouseId = $('#id_warehouse').val();
+
+                $.ajax({
+                    url: url,
+                    data: {
+                        'product': productId,
+                        'warehouse_product': warehouseId,
+                    },
+                    success: function (data) {
+                        $("#id_source_location").html(data)
+                    }
+                });
+           }
+        });
+    </script>
+
+    <script>
+        $(document).ready(function (){
+            $(".product-select").select2({
+                placeholder: 'Wybierz produkt'
+            });
+        });
+    </script>
+
+    <script>
+        $('body').on('submit', '#documentForm', function () {
+            let limit = parseInt($("option:selected", '.location-source-select').attr("quantity"));
+            let input = parseInt($("#id_quantity").val());
+            if (input > limit) {
+                swal({
+                    title: 'Przekroczenie stanu produktu.',
+                    text: 'Maksymalna ilość to ' + limit,
+                    icon: 'error'
+                });
+                return false;
+            }
+        })
+    </script>
+
+{% endblock %}

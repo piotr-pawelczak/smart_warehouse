@@ -57,12 +57,16 @@ def goods_issue_create(request, document_type):
     return render(request, 'documents/goods_issue_note/goods_issue_note_create.html', context)
 
 
+@login_required
 def goods_issue_update(request, document_type, pk):
 
     if document_type not in ['wz', 'rw']:
         return HttpResponseNotFound('<h1>Page not found</h1>')
 
     document = Document.objects.get(id=pk)
+
+    if document.document_type != document_type.upper():
+        return HttpResponseNotFound('<h1>Page not found</h1>')
 
     if document_type == 'wz':
         edit_form = GoodsIssueForm(instance=document)
@@ -159,6 +163,10 @@ def goods_received_notes_update(request, document_type, pk):
         return HttpResponseNotFound('<h1>Page not found</h1>')
 
     document = Document.objects.get(id=pk)
+
+    if document.document_type != document_type.upper():
+        return HttpResponseNotFound('<h1>Page not found</h1>')
+
     if document_type == 'pz':
         edit_form = GoodsReceivedForm(instance=document)
     else:
@@ -207,6 +215,7 @@ def goods_received_notes_update(request, document_type, pk):
 
 # ------------------------------------------ Interbranch Transfer Views ------------------------------------------------
 
+@login_required
 def interbranch_transfer_create(request):
 
     document_type = 'mm-'
@@ -266,6 +275,7 @@ def interbranch_transfer_create(request):
     return render(request, 'documents/interbranch_transfer/interbranch_transfer_create.html', context)
 
 
+@login_required
 def interbranch_transfer_update(request, pk):
     document = InterBranchTransferMinus.objects.get(id=pk)
     edit_form = InterBranchTransferMinusForm(instance=document)
@@ -339,6 +349,7 @@ class DocumentListView(LoginRequiredMixin, ListView):
         return queryset
 
 
+@login_required
 def document_detail(request, pk):
     document = Document.objects.get(id=pk)
     transfer_products = ProductTransfer.objects.none()
@@ -351,6 +362,7 @@ def document_detail(request, pk):
     return render(request, 'documents/detail.html', context)
 
 
+@login_required
 def document_delete(request, pk):
     document = get_object_or_404(Document, id=pk)
     if request.method == 'POST' and not document.confirmed:

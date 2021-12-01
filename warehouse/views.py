@@ -1,8 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from .models import Warehouse, Location, Shelf, Product
+from .models import Warehouse, Location, Shelf, Product, ProductLocation
 from django.shortcuts import get_object_or_404
-from .forms import WarehouseForm, ShelfForm, ProductForm, LocationForm, LoadLocationForm
+from .forms import WarehouseForm, ShelfForm, ProductForm, LocationForm, LoadLocationForm, ChangeLocationForm
 from django.contrib import messages
 from django.urls import reverse
 import copy
@@ -75,6 +75,8 @@ def warehouse_detail(request, slug):
                     location_name = f'{shelf.name}-{col + 1}-{lev + 1}'
                     Location.objects.create(name=location_name, parent_shelf=shelf, level_index=lev + 1,
                                             column_index=col + 1)
+        else:
+            messages.error(request, "Nie udało się utworzyć regału.")
 
     else:
         form = ShelfForm()
@@ -273,3 +275,45 @@ def warehouse_history(request, slug):
 
     context = {'warehouse': warehouse, 'received_type': received_type, 'shipped_type': shipped_type}
     return render(request, 'warehouse/locations/warehouse_history.html', context)
+
+
+@login_required
+def change_location(request):
+
+    if request.method == 'POST':
+        form = ChangeLocationForm(request.POST)
+        if form.is_valid():
+            product = form.cleaned_data["product"]
+            source_location = form.cleaned_data["source_location"]
+            target_location = form.cleaned_data["target_location"]
+            quantity = form.cleaned_data["quantity"]
+            lot_number = form.cleaned_data["lot_number"]
+
+            # Usunięcie pobranej ilości
+            product_location = ProductLocation.objects.get(product=product, location=source_location, lot_number=lot_number)
+            product_location.quantity -= quantity
+            product_location.save()
+            if not product_location.quantity:
+                product_location.delete()
+
+            # Przeniesienie do nowej lokalizacji
+            try:
+                product_target = ProductLocation.objects.get(product=product, location=target_location, lot_number=lot_number)
+                product_target.quantity += quantity
+                product_target.save()
+            except(Exception,):
+                ProductLocation.objects.create(
+                    product=product,
+                    location=target_location,
+                    lot_number=lot_number,
+                    quantity=quantity
+                )
+
+            messages.success(request, "Pomyślnie zmieniono lokalizację produktu")
+            return redirect("warehouse:home")
+
+    else:
+        form = ChangeLocationForm()
+
+    context = {'form': form}
+    return render(request, 'warehouse/locations/change_location.html', context)

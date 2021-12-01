@@ -14,6 +14,7 @@
         <div class="card-body">Numer dokumentu: {{ document }}</div>
     </div>
 
+    {% if not document.confirmed %}
     <form method="post" id="documentForm" warehouse-url="{% url "documents:ajax_load_warehouse_products" %}"
           product-url="{% url "documents:ajax_load_product_locations" %}" location-target-url="{% url "documents:ajax_load_target_locations" %}">
         {% csrf_token %}
@@ -79,12 +80,9 @@
 
         <input type="submit" class="btn btn-success mt-3" value="Zapisz" id="confirm">
     </form>
-
-    {% for dict in formset.errors %}
-        {% for error in dict.values %}
-            {{ error }}
-        {% endfor %}
-    {% endfor %}
+    {% else %}
+        <p>Nie można już edytować tego dokumentu. Został zatwierdzony.</p>
+    {% endif %}
 
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="{% static 'js/jquery.formset.js' %}"></script>

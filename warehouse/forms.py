@@ -31,7 +31,11 @@ class ShelfForm(forms.ModelForm):
         number = self.cleaned_data['shelf_number']
         zone = self.cleaned_data['zone']
 
-        if self.instance.shelf_number != number or self.instance.zone != zone:
+        if self.instance.id:
+            if self.instance.shelf_number != number or self.instance.zone != zone:
+                if Shelf.objects.filter(zone=zone, shelf_number=number).exists():
+                    raise forms.ValidationError('Istnieje już regał o tym numerze w wybranej strefie')
+        else:
             if Shelf.objects.filter(zone=zone, shelf_number=number).exists():
                 raise forms.ValidationError('Istnieje już regał o tym numerze w wybranej strefie')
 
@@ -55,3 +59,21 @@ class LocationForm(forms.ModelForm):
 
 class LoadLocationForm(forms.Form):
     max_load = forms.DecimalField(max_digits=12, decimal_places=3, min_value=0)
+
+
+class ChangeLocationForm(forms.Form):
+    warehouse = forms.ModelChoiceField(Warehouse.objects.filter(is_active=True))
+    product = forms.ModelChoiceField(Product.objects.filter(is_active=True))
+    source_location = forms.ModelChoiceField(Location.objects.filter(is_active=True))
+    target_location = forms.ModelChoiceField(Location.objects.filter(is_active=True))
+    quantity = forms.IntegerField(min_value=1)
+    lot_number = forms.CharField(max_length=20)
+
+    def __init__(self, *args, **kwargs):
+        super(ChangeLocationForm, self).__init__(*args, **kwargs)
+        self.fields['product'].queryset = Warehouse.objects.none()
+        self.fields['source_location'].queryset = Warehouse.objects.none()
+        self.fields['target_location'].queryset = Warehouse.objects.none()
+
+        if self.is_bound:
+            self.fields['product'].queryset = Product.objects.filter(is_active=True)

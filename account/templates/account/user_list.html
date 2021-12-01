@@ -1,0 +1,66 @@
+{% extends "warehouse/base.html" %}
+{% load static %}
+{% load tags %}
+
+{% block title %}Lista użytkowników{% endblock %}
+
+{% block content %}
+    {% if request.user|has_group:"admin" %}
+        <h1>Lista użytkowników</h1>
+        <div class="table-responsive mt-2 mb-4">
+        <table id="example" class="table table-striped" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Imię</th>
+                    <th>Nazwisko</th>
+                    <th>Rola</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>{{ user.first_name }}</td>
+                        <td>{{ user.last_name }}</td>
+                        {% if user|has_group:"admin" %}
+                            <td>Administrator</td>
+                        {% elif user|has_group:"employee" %}
+                            <td>Pracownik</td>
+                        {% endif %}
+                        <td>
+                            <a class="btn btn-warning" title="Edytuj" href="{% url "account:profile" user.id %}"><i class="fas fa-edit"></i></a>
+                        </td>
+                        <td>
+                            {% if request.user.id != user.id%}
+                            <form method="post" action="{% url "account:user-delete" user.id %}" class="m-0 p-0">
+                                <button class="btn btn-danger delete-contractor-btn" title="Usuń" type="submit" onclick="return confirm('Czy na pewno chcesz usunąć użytkownika?');"><i class="fas fa-trash"></i></button>
+                                {% csrf_token %}
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <a href="{% url "account:register" %}" class="btn btn-success mt-2">Dodaj nowego użytkownika</a>
+    {% else %}
+        <p>Brak uprawnień</p>
+    {% endif %}
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap5.min.js"></script>
+
+
+    <script>
+        $(document).ready(function() {
+            $('#example').DataTable({
+                sort: true
+            });
+        });
+    </script>
+
+{% endblock %}

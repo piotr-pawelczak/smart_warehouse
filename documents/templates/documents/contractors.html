@@ -42,7 +42,7 @@
                     <td>{{ contractor.phone_number }}</td>
                     <td>{{ contractor.email }}</td>
                     <td>
-                        <a class="btn btn-warning" title="Usuń" href="{% url "documents:contractor-update" contractor.id %}"><i class="fas fa-edit"></i></a>
+                        <a class="btn btn-warning" title="Edytuj" href="{% url "documents:contractor-update" contractor.id %}"><i class="fas fa-edit"></i></a>
                     </td>
                     <td>
                         <form method="post" action="{% url "documents:contractor-delete" contractor.id %}" class="m-0 p-0">

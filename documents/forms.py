@@ -159,6 +159,7 @@ class ContractorForm(forms.ModelForm):
         model = Contractor
         exclude = ()
         labels = {'name': 'Nazwa', 'address': 'Adres', 'phone_number': 'Numer telefonu'}
+
     
 
 

@@ -24,7 +24,7 @@
     </div>
 
     {% if edit_form.confirmed.value %}
-        <p>Nie można już edytować tego formularza. Został zatwierdzony.</p>
+        <p>Nie można już edytować tego dokumentu. Został zatwierdzony.</p>
     {% else %}
     <form method="post" action="" id="documentForm" data-url="{% url "documents:ajax_load_shelves" %}" location-url="{% url "documents:ajax_load_locations" %}">
         {% csrf_token %}

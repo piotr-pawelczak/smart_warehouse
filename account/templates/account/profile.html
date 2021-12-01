@@ -35,7 +35,7 @@
         </tr>
     </table>
 
-    {% if user.id == request.user.id %}
+    {% if user.id == request.user.id or request.user|has_group:"admin" %}
         <a href="{% url "account:password_change" %}" class="btn btn-warning">Zmień hasło</a>
 
          <!-- Edycja użytkownika -->
@@ -60,6 +60,11 @@
                            {{ edit_form.first_name|as_crispy_field }}
                            {{ edit_form.last_name|as_crispy_field }}
                            {{ edit_form.email|as_crispy_field }}
+
+                           {% if request.user|has_group:"admin" %}
+                               {{ edit_form.group|as_crispy_field }}
+                           {% endif %}
+
                            <div class="mt-2 mx-auto row">
                                <input type="submit" value="Edytuj" class="btn btn-success mx-auto col-5">
                                <button type="button" class="btn btn-danger mx-auto col-5 offset-2" data-bs-dismiss="modal">Anuluj</button>
@@ -73,9 +78,11 @@
              </div>
          </div>
 
-        {% if request.user|has_group:"admin" %}
+        {% if request.user|has_group:"admin" and request.user.id == user.id %}
             <h3 class="mt-5">Panel administratora</h3>
             <a href="{% url "account:register" %}" class="btn btn-success mt-2">Dodaj nowego użytkownika</a>
+            <div></div>
+            <a href="{% url "account:user_list" %}" class="btn btn-success mt-2">Lista użytkowników</a>
         {% endif %}
 
     {% endif %}

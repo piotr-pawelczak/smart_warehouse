@@ -43,3 +43,21 @@ class UserUpdateForm(forms.ModelForm):
             'last_name': forms.TextInput(attrs={'required': 'True'}),
             'email': forms.TextInput(attrs={'required': 'True'}),
         }
+
+
+class UserUpdateFormAdmin(UserUpdateForm):
+    GROUP_CHOICES = [
+        ('admin', 'Administrator'),
+        ('employee', 'Pracownik')
+    ]
+
+    group = forms.ChoiceField(choices=GROUP_CHOICES)
+
+    def __init__(self, *args, **kwargs):
+        super(UserUpdateFormAdmin, self).__init__(*args, **kwargs)
+
+        if self.instance.id:
+            if self.instance.groups.filter(name="admin").exists():
+                self.fields["group"].initial = "admin"
+            else:
+                self.fields["group"].initial = "employee"
