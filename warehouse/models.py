@@ -184,6 +184,23 @@ class Location(models.Model):
             current_load += weight * quantity
         return current_load
 
+    @property
+    def set_style(self):
+        max_load = float(self.max_load)
+        current_load = self.get_current_load
+
+        if not self.is_active:
+            return "btn-square-md btn btn-dark"
+        else:
+            if 0 < current_load < 0.7 * max_load:
+                return "btn-square-md btn btn-success"
+            elif 0.7 * max_load <= current_load < max_load:
+                return "btn-square-md btn btn-warning"
+            elif max_load < current_load:
+                return "btn-square-md btn btn-danger"
+            else:
+                return "btn-square-md btn btn-secondary"
+
     def save(self, *args, **kwargs):
         self.name = f'{self.parent_shelf.name}-{self.column_index}-{self.level_index}'
         super(Location, self).save(*args, **kwargs)

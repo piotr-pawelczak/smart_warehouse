@@ -97,6 +97,14 @@
     {% endif %}
 
     <h3 class="my-3">Wizualizacja regału</h3>
+
+    <strong class="mb-2">Legenda</strong>
+    <p>Szary: brak produktów w lokalizacji</p>
+    <p>Zielony: obciążenie lokalizacji poniżej 70% dozwolonej nośności</p>
+    <p>Żółty: obciążenie lokalizacji powyżej 70% dozwolonej nośności</p>
+    <p>Czerwony: przekroczono dozwoloną nośność</p>
+    <p>Czarna: lokalizacja nieaktywna</p>
+
     <div class="table-responsive">
         <table>
         {% for row in locations_table %}
@@ -104,7 +112,11 @@
             {% for cell in row %}
                 <td>
                     <a href="{% url "warehouse:location_detail" cell.id %}">
-                        <input type="submit" class="btn-square-md btn btn-secondary" value="{{ cell }}">
+                        {% if cell.is_active %}
+                            <input type="submit" class="{{ cell.set_style }}" value="{{ cell }}">
+                        {% else %}
+                            <input type="submit" class="{{ cell.set_style }}" value="{{ cell }}">
+                        {% endif %}
                     </a>
                 </td>
             {% endfor %}
