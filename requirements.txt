@@ -1,4 +1,5 @@
 asgiref==3.4.1
+colorama==0.4.4
 dj-database-url==0.5.0
 Django==3.2.8
 django-ajax-selects==2.1.0
@@ -16,7 +17,10 @@ numpy==1.21.2
 phonenumbers==8.12.37
 psycopg2==2.9.1
 pytz==2021.3
+qrcode==7.3.1
 six==1.16.0
 sqlparse==0.4.2
 whitenoise==5.3.0
+
+
 
