@@ -10,10 +10,6 @@ from .forms import WarehouseQrForm, ShelfQrForm, LocationQrForm
 
 
 def home(request):
-
-    location = Location.objects.get(id=119)
-    location_data = get_location_qr_data(location)
-
     warehouse_form = WarehouseQrForm()
     shelf_form = ShelfQrForm()
     location_form = LocationQrForm()
