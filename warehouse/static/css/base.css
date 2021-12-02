@@ -177,3 +177,7 @@ td.quantity_information {
     text-decoration: none;
     display: block;
 }
+
+.qr_form_heading {
+    margin-top: 30px;
+}

@@ -34,6 +34,7 @@ ALLOWED_HOSTS = ['smart-warehouse-web.herokuapp.com']
 # Application definition
 
 INSTALLED_APPS = [
+    'qr_labels.apps.QrCodeConfig',
     'account.apps.AccountConfig',
     'documents.apps.DocumentsConfig',
     'warehouse.apps.WarehouseConfig',

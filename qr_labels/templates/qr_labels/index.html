@@ -1,0 +1,48 @@
+{% extends "warehouse/base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Etykieta{% endblock %}
+
+{% block content %}
+    <h1>Etykiety lokalizacji</h1>
+    <p>Uzupełniając odpowiedni formularz możesz wygenerować etykiety dla lokalizacji w całym magazynie, dla całego regału, lub pojedynczej lokalizacji.</p>
+
+    <h3 class="qr_form_heading">Etykieta dla pojedynczej lokalizacji</h3>
+    <form method="post">
+        {% csrf_token %}
+        {{ location_form.location|add_class:"form-control location-select my-select" }}
+        <input type="submit" value="Generuj" class="btn btn-success mt-2" name="location_submit">
+    </form>
+
+    <h3 class="qr_form_heading">Etykiety dla całego regału</h3>
+    <form method="post">
+        {% csrf_token %}
+        {{ shelf_form.shelf|add_class:"form-control shelf-select my-select" }}
+        <input type="submit" value="Generuj" class="btn btn-success mt-2" name="shelf_submit">
+    </form>
+
+    <h3 class="qr_form_heading">Etykiety dla całego magazynu</h3>
+    <form method="post">
+        {% csrf_token %}
+        {{ warehouse_form.warehouse|add_class:"form-control warehouse-select my-select" }}
+        <input type="submit" value="Generuj" class="btn btn-success mt-2" name="warehouse_submit">
+    </form>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="{% static 'js/select2.min.js' %}"></script>
+
+    <script>
+        $(document).ready(function (){
+            $(".warehouse-select").select2({
+                placeholder: 'Wybierz produkt'
+            });
+            $(".shelf-select").select2({
+                placeholder: 'Wybierz regał'
+            });
+            $(".location-select").select2({
+                placeholder: 'Wybierz lokalizację'
+            });
+        });
+    </script>
+{% endblock %}

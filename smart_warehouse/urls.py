@@ -8,4 +8,5 @@ urlpatterns = [
     path('document/', include('documents.urls')),
     path('account/', include('account.urls')),
     path('ajax_select', include(ajax_select_urls)),
+    path('qr/', include('qr_labels.urls'))
 ]
