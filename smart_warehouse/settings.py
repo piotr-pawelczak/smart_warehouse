@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'django_filters',
     'phonenumber_field',
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -153,3 +155,11 @@ LOGIN_URL = 'account:login'
 LOGOUT_URL = 'account:logout'
 LOGIN_REDIRECT_URL = 'warehouse:home'
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
