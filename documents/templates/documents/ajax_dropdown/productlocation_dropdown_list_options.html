@@ -1,4 +1,11 @@
 <option value="">---------</option>
-{% for product_location in locations %}
-    <option quantity="{{ product_location.quantity }}" value="{{ product_location.location.id }}" lot_number="{{ product_location.lot_number }}">{{ product_location.location.name }} ({{ product_location.lot_number }})</option>
-{% endfor %}
+
+{% if label_generation %}
+    {% for product_location in locations %}
+        <option value="{{ product_location.location.id }}" lot_number="{{ product_location.lot_number }}">{{ product_location.location.name }} ({{ product_location.lot_number }}) - {{ product_location.quantity }} szt.</option>
+    {% endfor %}
+{% else %}
+    {% for product_location in locations %}
+        <option quantity="{{ product_location.quantity }}" value="{{ product_location.location.id }}" lot_number="{{ product_location.lot_number }}">{{ product_location.location.name }} ({{ product_location.lot_number }})</option>
+    {% endfor %}
+{% endif %}

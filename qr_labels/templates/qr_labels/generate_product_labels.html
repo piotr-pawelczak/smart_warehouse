@@ -1,0 +1,68 @@
+{% extends "warehouse/base.html" %}
+{% load crispy_forms_filters %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Etykieta{% endblock %}
+
+{% block content %}
+    <h1>Etykiety produktów</h1>
+    <p>Uzupełniając odpowiedni formularz możesz wygenerować etykiety dla lokalizacji w całym magazynie, dla całego regału, lub pojedynczej lokalizacji.</p>
+
+    <h3 class="qr_form_heading">Etykieta dla produktu</h3>
+    <form method="post" id="qrForm" product-url="{% url "documents:ajax_load_product_locations" %}">
+        {% csrf_token %}
+
+        <label class="mt-2">Produkt</label>
+        {{ form.product|add_class:"form-control product-select" }}
+
+        <label class="mt-2">Lokalizacja i numer partii</label>
+        {{ form.location|add_class:"form-control location-select" }}
+
+        <label class="mt-2">Ilość etykiet</label>
+        {{ form.quantity|add_class:"form-control" }}
+
+        {{ form.lot_number.as_hidden }}
+
+        <input type="submit" value="Generuj" class="btn btn-success mt-2" name="location_submit">
+    </form>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="{% static 'js/select2.min.js' %}"></script>
+
+    <script>
+        $(document).ready(function (){
+            $(".product-select").select2({
+                placeholder: 'Wybierz produkt'
+            });
+        });
+    </script>
+
+    <script>
+        $(document.body).on("change", ".product-select", function (){
+            var url = $("#qrForm").attr("product-url");
+            var productId = $("#id_product").val();
+
+            $.ajax({
+                url: url,
+                data: {
+                    'product': productId,
+                },
+                success: function (data) {
+                    $("#id_location").html(data)
+                }
+            });
+        });
+
+        document.body.addEventListener('change', function (event) {
+           if(event.target.id === 'id_location'){
+               let lot_number = $("option:selected", "#id_location").attr("lot_number");
+               $("#id_lot_number").val(lot_number);
+           }
+        });
+
+        $( document ).ready(function() {
+            $("#id_product").trigger("change");
+        });
+    </script>
+{% endblock %}

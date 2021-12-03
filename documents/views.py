@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseNotFound
 from django.shortcuts import render, redirect, get_object_or_404
-import copy
+from qr_labels.views import get_product_qr_data, generate_svg
 
 from documents.forms import *
 from django.forms import inlineformset_factory
@@ -353,12 +353,36 @@ class DocumentListView(LoginRequiredMixin, ListView):
 def document_detail(request, pk):
     document = Document.objects.get(id=pk)
     transfer_products = ProductTransfer.objects.none()
+    qr_label_types = ['PZ', 'PW', 'MM+']
 
     if document.document_type in ['MM+', 'MM-']:
         products_ids = [elem.id for elem in document.products.all()]
         transfer_products = ProductTransfer.objects.filter(id__in=products_ids)
 
-    context = {'document': document, 'transfer_products': transfer_products}
+    if request.method == 'POST' and 'qr_labels' in request.POST:
+        product_documents = document.products.all()
+
+        products = [elem.product for elem in product_documents]
+        quantity = [elem.quantity for elem in product_documents]
+        lot_numbers = [elem.lot_number for elem in product_documents]
+
+        products_data = []
+        products_list = []
+        lot_numbers_list = []
+        for p, qty, lot in zip(products, quantity, lot_numbers):
+            data = get_product_qr_data(p, lot)
+            for i in range(qty):
+                products_data.append(data)
+                products_list.append(p)
+                lot_numbers_list.append(lot)
+
+        products_svg = [generate_svg(elem) for elem in products_data]
+        products_svg_lot = zip(products_list, products_svg, lot_numbers_list)
+
+        context = {'document_generate': True, 'products_svg_lot': products_svg_lot}
+        return render(request, 'qr_labels/product_labels_to_print.html', context)
+
+    context = {'document': document, 'transfer_products': transfer_products, 'qr_label_types': qr_label_types}
     return render(request, 'documents/detail.html', context)
 
 
@@ -381,12 +405,18 @@ def load_warehouse_products(request):
 
 def load_product_locations(request):
     product_id = request.GET.get('product')
-    warehouse_id = request.GET.get('warehouse_product')
-    locations = Product.objects.get(id=product_id).locations.filter(location__parent_shelf__warehouse_id=warehouse_id,
-                                                                    location__is_active=True,
-                                                                    location__parent_shelf__is_active=True
-                                                                    )
-    context = {'locations': locations}
+    label_generation = False
+
+    if 'warehouse_product' in request.GET:
+        warehouse_id = request.GET.get('warehouse_product')
+        locations = Product.objects.get(id=product_id).locations.filter(location__parent_shelf__warehouse_id=warehouse_id,
+                                                                        location__is_active=True,
+                                                                        location__parent_shelf__is_active=True
+                                                                        )
+    else:
+        label_generation = True
+        locations = Product.objects.get(id=product_id).locations.all()
+    context = {'locations': locations, 'label_generation': label_generation}
     return render(request, 'documents/ajax_dropdown/productlocation_dropdown_list_options.html', context)
 
 

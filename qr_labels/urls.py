@@ -4,5 +4,6 @@ from . import views
 app_name = 'qr_labels'
 
 urlpatterns = [
-    path('', views.home, name='qr_home'),
+    path('location/', views.generate_location_labels, name='generate_locations'),
+    path('product/', views.generate_product_labels, name='generate_products'),
 ]

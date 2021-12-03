@@ -67,7 +67,7 @@
             <div class="col-lg-3 col-sm-6 col-6">
                 <form method="post" action="{% url "documents:document-delete" document.id %}" class="m-0 p-0">
                     {% csrf_token %}
-                    <input type="submit" class="btn btn-danger" value="Usuń dokument" style="width: 100%;" onclick="return confirm('Czy na pewno chcesz usunąć dokument?');">
+                    <input type="submit" class="btn btn-danger" value="Usuń dokument" style="width: 100%;" onclick="return confirm('Czy na pewno chcesz usunąć dokument?');" name="document_delete">
                 </form>
             </div>
 
@@ -166,5 +166,12 @@
             </tbody>
         </table>
     </div>
+
+    {% if document.document_type in qr_label_types %}
+        <form method="post">
+            {% csrf_token %}
+            <input type="submit" class="btn btn-success" value="Generuj etykiety" name="qr_labels">
+        </form>
+    {% endif %}
 
 {% endblock %}
