@@ -81,18 +81,12 @@ def generate_svg(data):
 
 
 def get_location_qr_data(location):
-    data = {
-        'id': location.id,
-        'name': location.name
-    }
-    return json.dumps(data)
+    data = f"location;{location.id};{location.name}"
+    return data
 
 
 def get_product_qr_data(product, lot_number):
-    data = {
-        'id': product.id,
-        'lot_number': lot_number
-    }
+    data = f"product;{product.id};{product.name};{lot_number}"
     return json.dumps(data)
 
 
