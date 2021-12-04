@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
+from warehouse.models import Product
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -20,3 +21,17 @@ class UserSerializer(serializers.ModelSerializer):
                 fields=['username', 'email']
             )
         ]
+
+
+class ProductSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Product
+        fields = (
+            'id',
+            'name',
+            'sku',
+            'description',
+            'weight',
+            'is_active',
+        )
