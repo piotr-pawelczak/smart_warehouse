@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
-from warehouse.models import Product
+from warehouse.models import Product, ProductLocation
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -34,4 +34,17 @@ class ProductSerializer(serializers.ModelSerializer):
             'description',
             'weight',
             'is_active',
+        )
+
+
+class ProductLocationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ProductLocation
+        fields = (
+            'id',
+            'product',
+            'location',
+            'lot_number',
+            'quantity',
         )
