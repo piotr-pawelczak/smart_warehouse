@@ -8,6 +8,7 @@ urlpatterns = [
     path('product/<int:pk>', ProductDetail.as_view(), name='product_detail'),
     path('product-location', ProductLocationRecordView.as_view(), name='product_locations'),
     path('product-location-search/', ProductLocationSearch.as_view(), name='product_location_search'),
+    path('product-location-detail/<int:pk>', ProductLocationDetail.as_view(), name='product_location_detail'),
     path('product-location-update/<int:pk>', ProductLocationUpdate.as_view(), name='product_location_update'),
     path('product-location-create/', ProductLocationCreate.as_view(), name='product_location_create'),
 ]

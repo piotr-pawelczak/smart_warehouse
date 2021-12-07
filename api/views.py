@@ -59,6 +59,11 @@ class ProductLocationSearch(APIView):
         return Response(serializer.data)
 
 
+class ProductLocationDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = ProductLocation.objects.all()
+    serializer_class = ProductLocationSerializer
+
+
 class ProductLocationUpdate(UpdateAPIView):
     queryset = ProductLocation.objects.all()
     serializer_class = ProductLocationSerializer
