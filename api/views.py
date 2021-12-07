@@ -47,7 +47,7 @@ class ProductLocationRecordView(APIView):
         return Response(serializer.data)
 
 
-class ProductLocationDetail(APIView):
+class ProductLocationSearch(APIView):
 
     def get(self, request):
         product = self.request.query_params.get('product')
