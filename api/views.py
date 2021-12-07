@@ -64,19 +64,6 @@ class ProductLocationDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ProductLocationSerializer
 
 
-class ProductLocationUpdate(UpdateAPIView):
-    queryset = ProductLocation.objects.all()
-    serializer_class = ProductLocationSerializer
-
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.quantity = request.data.get("quantity")
-        instance.save()
-
-        serializer = ProductLocationSerializer(instance)
-        return Response(serializer.data)
-
-
 class ProductLocationCreate(CreateAPIView):
     serializer_class = ProductLocationSerializer
     permission_classes = (IsAuthenticated,)
