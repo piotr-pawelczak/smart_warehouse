@@ -30,14 +30,19 @@ class ShelfForm(forms.ModelForm):
     def clean(self):
         number = self.cleaned_data['shelf_number']
         zone = self.cleaned_data['zone']
+        warehouse_id = self.warehouse_id
 
         if self.instance.id:
             if self.instance.shelf_number != number or self.instance.zone != zone:
-                if Shelf.objects.filter(zone=zone, shelf_number=number).exists():
+                if Shelf.objects.filter(zone=zone, shelf_number=number, warehouse_id=warehouse_id).exists():
                     raise forms.ValidationError('Istnieje już regał o tym numerze w wybranej strefie')
         else:
-            if Shelf.objects.filter(zone=zone, shelf_number=number).exists():
+            if Shelf.objects.filter(zone=zone, shelf_number=number, warehouse_id=warehouse_id).exists():
                 raise forms.ValidationError('Istnieje już regał o tym numerze w wybranej strefie')
+
+    def __init__(self, *args, **kwargs):
+        self.warehouse_id = kwargs.pop('warehouse_id')
+        super(ShelfForm, self).__init__(*args, **kwargs)
 
 
 class ProductForm(forms.ModelForm):

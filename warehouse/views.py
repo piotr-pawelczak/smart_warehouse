@@ -59,7 +59,7 @@ def warehouse_detail(request, slug):
 
     # Formularz do utworzenia regału
     if request.method == 'POST' and 'create_shelf_button' in request.POST:
-        form = ShelfForm(request.POST)
+        form = ShelfForm(request.POST, warehouse_id=warehouse.id)
 
         if form.is_valid():
             shelf = form.save(commit=False)
@@ -79,7 +79,7 @@ def warehouse_detail(request, slug):
             messages.error(request, "Nie udało się utworzyć regału.")
 
     else:
-        form = ShelfForm()
+        form = ShelfForm(warehouse_id=warehouse.id)
 
     context = {'warehouse': warehouse, 'form': form, 'shelves': shelves, 'edit_form': edit_form,
                'shelves_receiving': shelves_receiving, 'shelves_storage': shelves_storage,
@@ -124,10 +124,10 @@ def shelf_detail(request, pk):
         load_form = LoadLocationForm()
 
     # Formularz do edycji regału
-    edit_form = ShelfForm(instance=shelf)
+    edit_form = ShelfForm(instance=shelf, warehouse_id=shelf.warehouse.id)
     if request.method == 'POST' and 'shelf-edit' in request.POST:
         old_shelf = copy.copy(shelf)
-        edit_form = ShelfForm(request.POST, instance=shelf)
+        edit_form = ShelfForm(request.POST, instance=shelf, warehouse_id=shelf.warehouse.id)
         if edit_form.is_valid():
             columns = edit_form.cleaned_data['columns']
             levels = edit_form.cleaned_data['levels']
