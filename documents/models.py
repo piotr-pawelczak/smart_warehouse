@@ -45,13 +45,10 @@ class Document(PolymorphicModel):
     @property
     def get_source_warehouse(self):
         if InterBranchTransferPlus.objects.get(id=self.id):
-            print('MM+')
             return InterBranchTransferPlus.objects.get(id=self.id).source_warehouse
         elif InterBranchTransferMinus.objects.get(id=self.id):
-            print('MM-')
             return InterBranchTransferMinus.objects.get(id=self.id).warehouse
         else:
-            print('else')
             return None
 
     @property

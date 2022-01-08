@@ -39,7 +39,7 @@
                 <tr>
                     <td>{{ contractor.name }}</td>
                     <td>{{ contractor.address }}</td>
-                    <td>{{ contractor.phone_number }}</td>
+                    <td>{{ contractor.formatted_phone }}</td>
                     <td>{{ contractor.email }}</td>
                     <td>
                         <a class="btn btn-warning" title="Edytuj" href="{% url "documents:contractor-update" contractor.id %}"><i class="fas fa-edit"></i></a>

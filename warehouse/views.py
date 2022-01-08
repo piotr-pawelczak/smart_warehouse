@@ -207,7 +207,6 @@ def product_create(request):
         form = ProductForm(request.POST)
         if form.is_valid():
             new_product = form.save()
-
             sku_length = 5
             zeros_num = sku_length - len(str(new_product.id))
             new_product.sku = f'P{zeros_num * "0"}{new_product.id}'
@@ -223,7 +222,7 @@ def product_create(request):
 
 
 @login_required
-def product_detail(request, pk, slug):
+def product_detail(request, pk):
     product = get_object_or_404(Product, id=pk)
     context = {'product': product}
     return render(request, 'warehouse/products/product_detail.html', context)
