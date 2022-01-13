@@ -222,8 +222,8 @@ def product_create(request):
 
 
 @login_required
-def product_detail(request, pk):
-    product = get_object_or_404(Product, id=pk)
+def product_detail(request, pk, slug):
+    product = get_object_or_404(Product, id=pk, slug=slug)
     context = {'product': product}
     return render(request, 'warehouse/products/product_detail.html', context)
 
